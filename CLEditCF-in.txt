@@ -1,0 +1,706 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. ACFL0000.      
+       ENVIRONMENT DIVISION. 
+       INPUT-OUTPUT SECTION. 
+       FILE-CONTROL.
+
+           SELECT ACFL0000-FILE 
+               ASSIGN       TO WS-ACFL0000-FILE-TXT
+               ORGANIZATION IS INDEXED
+               ACCESS MODE  IS DYNAMIC
+               RECORD KEY   IS ACFL0000-KEY OF ACFL0000-REC
+               FILE STATUS  IS WS-ACFL0000-FILE-STATUS.
+
+           SELECT ACFL0000-FILE-READ 
+               ASSIGN       TO WS-ACFL0000-FILE-TXT
+               ORGANIZATION IS INDEXED
+               ACCESS MODE  IS SEQUENTIAL
+               RECORD KEY   IS ACFL0000-KEY OF ACFL0000-REC-READ
+               FILE STATUS  IS WS-ACFL0000-FILE-STATUS.
+
+       DATA DIVISION.
+       FILE SECTION. 
+       FD  ACFL0000-FILE
+           RECORD CONTAINS 2072 CHARACTERS.
+
+       01  ACFL0000-REC.
+       COPY 'ACCB0000.cob'.
+
+       FD  ACFL0000-FILE-READ
+           RECORD CONTAINS 2072 CHARACTERS.
+
+       01  ACFL0000-REC-READ.
+       COPY 'ACCB0000.cob'.
+
+       WORKING-STORAGE SECTION.
+      
+       01  WS-PROGRAM-INFO. 
+           05  WS-PROGRAM-NAME                PIC  X(08)
+               VALUE "ACFL0000".  
+           05  WS-PROGRAM-VERSION             PIC  9(01)
+               VALUE 0.
+           05  WS-PARAGRAPH                   PIC  X(30)
+               VALUE SPACES.
+           05  WS-ACTION                      PIC  X(01)
+      *    P - pick a record
+      *    S - process the entire file sequentially 
+      *    W - write a record to the file
+      *    D - delete a record from the file
+      *    R - rewrite a record
+               VALUE " ".
+      
+       01  WS-SWITCHES.
+           05  WS-EOF-SW                      PIC  X(01)
+               VALUE "0".   
+           05  WS-ERROR-SW                    PIC  X(01)
+               VALUE "0".
+
+       01  WS-FILE-STATUS.
+           05  WS-ACFL0000-FILE-TXT           PIC  X(12)
+               VALUE "ACFL0000.txt".
+           05  WS-ACFL0000-FILE-STATUS        PIC  X(02)
+               VALUE SPACES.
+
+       01  WS-COUNTERS.
+           05  WS-ACFL0000-READ-CNT           PIC S9(09)
+               VALUE +0. 
+           05  WS-ACFL0000-WRITE-CNT          PIC S9(09)
+               VALUE +0. 
+           05  WS-ACFL0000-DELETE-CNT         PIC S9(09)
+               VALUE +0. 
+           05  WS-ACFL0000-UPDATE-CNT         PIC S9(09)
+               VALUE +0. 
+
+      *    the original first cycle! 
+       01  WS-CONSTANTS.
+           05  WS-AC-DATE                     PIC  X(08)
+               VALUE "20221102".
+           05  WS-AC-TIME                     PIC  X(08)
+               VALUE "13352145".
+           05  WS-AC-CYCLE                    PIC  X(04)
+               VALUE "0000".
+           05  WS-AC-SEQ                      PIC S9(04)
+               VALUE +0.
+
+       01  WS-AREAS.
+           05  WS-DATE.
+               10  WS-DATE-MM                 PIC  9(02)               
+                   VALUE  0.
+               10                             PIC  X(01)
+                   VALUE "/".
+               10  WS-DATE-DD                 PIC  9(02)
+                   VALUE  0.
+               10                             PIC  X(01)
+                   VALUE "/".
+               10  WS-DATE-YEAR               PIC  9(04)
+                   VALUE  0.
+           05  WS-TIME.
+               10  WS-TIME-HH                 PIC  9(02)
+                   VALUE  0.
+               10                             PIC  X(01)
+                   VALUE ":".
+               10  WS-TIME-MM                 PIC  9(02)
+                   VALUE  0.
+               10                             PIC  X(01)
+                   VALUE ":".
+               10  WS-TIME-SS                 PIC  9(02)
+                   VALUE  0.
+           05  WS-MSG                         PIC  X(80)
+               VALUE "continue".
+           05  WS-FILE-STATUS                 PIC  9(02)
+               VALUE  0.
+           05  WS-DATA-AREA                   PIC  X(100)
+               VALUE SPACES.
+
+        01  CURRENT-DATE-AND-TIME.
+            05  CDT-Year                      PIC  9(04).
+            05  CDT-Month                     PIC  9(02).
+            05  CDT-Day                       PIC  9(02).
+            05  CDT-Hour                      PIC  9(02).
+            05  CDT-Minutes                   PIC  9(02).
+            05  CDT-Seconds                   PIC  9(02).
+            05  CDT-Hundredths-Of-Secs        PIC  9(02).
+            05  CDT-GMT-Diff-Hours            PIC S9(02).
+            05  CDT-GMT-Diff-Minutes          PIC  9(02).
+               
+       LINKAGE SECTION. 
+       01  LINKAGE-SECTION.
+       COPY 'ACLS0000.cob'.
+
+       PROCEDURE DIVISION USING LINKAGE-SECTION.
+       000000-MAINLINE.
+           
+           MOVE "000000-MAINLINE"
+             TO WS-PARAGRAPH.
+
+           IF  (LENGTH OF LINKAGE-SECTION = ACLS0000-LEN)
+               NEXT SENTENCE
+           ELSE
+               MOVE 3500 TO ACLS0000-RC
+               GO TO 000000-EXIT.
+      
+           PERFORM 000100-INIT
+              THRU 000100-EXIT.
+      
+           IF  (WS-ACTION = "W")           
+               PERFORM 100000-WRITE
+                  THRU 100000-EXIT
+           END-IF.
+
+           IF  (WS-ACTION = "S")           
+               PERFORM 200000-SEQUENTIAL
+                  THRU 200000-EXIT
+           END-IF.
+
+           IF  (WS-ACTION = "R")           
+               PERFORM 300000-REWRITE
+                  THRU 300000-EXIT
+           END-IF.
+      
+           IF  (WS-ACTION = "P")           
+               PERFORM 400000-PICK
+                  THRU 400000-EXIT
+           END-IF.
+      
+           IF  (WS-ACTION = "D")           
+               PERFORM 500000-DELETE
+                  THRU 500000-EXIT
+           END-IF.
+     
+           PERFORM 000200-END
+              THRU 000200-EXIT.
+      
+       000000-EXIT.
+           GOBACK.  
+       000100-INIT.
+      
+           MOVE "000100-INIT" 
+             TO WS-PARAGRAPH.
+
+           MOVE 0000 TO ACLS0000-RC.
+           MOVE ACLS0000-DATE-YEAR TO WS-DATE-YEAR. 
+           MOVE ACLS0000-DATE-YEAR TO CDT-Year.  
+           MOVE ACLS0000-DATE-MM   TO WS-DATE-MM.  
+           MOVE ACLS0000-DATE-MM   TO CDT-Month.           
+           MOVE ACLS0000-DATE-DD   TO WS-DATE-DD.
+           MOVE ACLS0000-DATE-DD   TO CDT-Day.
+                            
+           MOVE ACLS0000-TIME-HH   TO WS-TIME-HH. 
+           MOVE ACLS0000-TIME-HH   TO CDT-Hour.
+           MOVE ACLS0000-TIME-MM   TO WS-TIME-MM.  
+           MOVE ACLS0000-TIME-MM   TO CDT-Minutes.
+           MOVE ACLS0000-TIME-SS   TO WS-TIME-SS.
+           MOVE ACLS0000-TIME-SS   TO CDT-Seconds. 
+           MOVE ACLS0000-TIME-CC   TO CDT-Hundredths-Of-Secs.
+
+           MOVE ACLS0000-ACTION TO WS-ACTION.
+      
+       000100-EXIT.  EXIT.  
+       
+       000200-END.
+      
+           MOVE "000200-END"
+             TO WS-PARAGRAPH.
+      
+       000200-EXIT.  EXIT.
+        
+       100000-WRITE.  
+
+           MOVE "100000-WRITE" 
+             TO WS-PARAGRAPH.
+
+           PERFORM 110000-OPEN
+              THRU 110000-EXIT.
+
+           PERFORM 120000-FORMAT
+              THRU 120000-EXIT.
+
+           PERFORM 130000-WRITE
+              THRU 130000-EXIT.
+
+           PERFORM 140000-CLOSE
+              THRU 140000-EXIT.
+         
+       100000-EXIT.  EXIT.
+       
+       110000-OPEN.
+
+           MOVE "110000-OPEN" 
+             TO WS-PARAGRAPH.
+
+           OPEN OUTPUT ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+           OR  (WS-ACFL0000-FILE-STATUS = '35')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3501 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       110000-EXIT.  EXIT.
+
+       120000-FORMAT.
+
+           MOVE "120000-FORMAT" 
+             TO WS-PARAGRAPH.
+
+           MOVE SPACES 
+             TO ACFL0000-REC.
+      * key   YYYYMMDDHHMMSSCCSEQ
+           MOVE ACLS0000-KEY     
+             TO ACFL0000-KEY OF ACFL0000-REC. 
+      * data
+           MOVE ACLS0000-DATA 
+             TO ACFL0000-DATA OF ACFL0000-REC.
+      
+       120000-EXIT.  EXIT.
+
+       130000-WRITE.
+
+           MOVE "130000-WRITE" 
+             TO WS-PARAGRAPH.
+      
+           WRITE ACFL0000-REC.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-WRITE-CNT
+           ELSE
+               MOVE 3502 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+
+       130000-EXIT.  EXIT.
+
+       140000-CLOSE.
+               
+           MOVE "140000-CLOSE" 
+             TO WS-PARAGRAPH.
+
+           CLOSE ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3503 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       140000-EXIT.  EXIT.
+
+       200000-SEQUENTIAL.
+        
+           MOVE "200000-PROCESS"
+             TO WS-PARAGRAPH.
+
+           PERFORM 210000-OPEN
+              THRU 210000-EXIT.
+
+           PERFORM 221000-READ
+              THRU 221000-EXIT.
+
+           PERFORM 220000-PROCESS
+              THRU 220000-EXIT
+               UNTIL (WS-ACFL0000-FILE-STATUS = '10').
+
+           PERFORM 230000-CLOSE
+              THRU 230000-EXIT.
+
+       200000-EXIT.  EXIT.
+
+       210000-OPEN.
+
+           MOVE "210000-OPEN" 
+             TO WS-PARAGRAPH.
+
+           OPEN INPUT ACFL0000-FILE-READ.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3504 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.               
+          
+       210000-EXIT.  EXIT.
+
+       220000-PROCESS.
+
+           MOVE "220000-PROCESS" 
+             TO WS-PARAGRAPH.
+
+           MOVE ACFL0000-DATA OF ACFL0000-REC-READ
+             TO WS-DATA-AREA.
+
+           DISPLAY "Date / Time " ACFL0000-DATE-TIME 
+                               OF ACFL0000-REC-READ               
+                   " Cycle " ACFL0000-CYCLE
+                          OF ACFL0000-REC-READ
+                   " Seq " ACFL0000-SEQ
+                          OF ACFL0000-REC-READ
+                   " Data " WS-DATA-AREA.
+
+           PERFORM 221000-READ
+              THRU 221000-EXIT.
+
+       220000-EXIT.  EXIT.
+
+       221000-READ.
+
+           MOVE "221000-READ" 
+             TO WS-PARAGRAPH.
+      
+           READ ACFL0000-FILE-READ.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-READ-CNT
+           ELSE
+               IF  (WS-ACFL0000-FILE-STATUS = '10')
+                   NEXT SENTENCE
+               ELSE
+                   MOVE 3505 TO ACLS0000-RC
+                   PERFORM 999999-ERROR
+                      THRU 999999-EXIT
+                   GO TO 000000-EXIT
+               END-IF
+           END-IF.
+
+       221000-EXIT.  EXIT.
+
+       230000-CLOSE.
+
+           MOVE "230000-CLOSE" 
+             TO WS-PARAGRAPH.
+
+           CLOSE ACFL0000-FILE-READ.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3506 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+
+       230000-EXIT.  EXIT.
+ 
+       300000-REWRITE.
+        
+           MOVE "300000-REWRITE"
+             TO WS-PARAGRAPH.
+
+           PERFORM 310000-OPEN
+              THRU 310000-EXIT.
+
+           MOVE ACLS0000-KEY
+             TO ACFL0000-KEY OF ACFL0000-REC.
+
+           PERFORM 320000-READ
+              THRU 320000-EXIT.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '23')
+               GO TO 300000-NEXT
+           END-IF.
+
+           PERFORM 330000-UPDATE
+              THRU 330000-EXIT.
+
+           PERFORM 340000-REWRITE
+              THRU 340000-EXIT.
+       
+       300000-NEXT.
+
+           PERFORM 350000-CLOSE
+              THRU 350000-EXIT.
+
+       300000-EXIT.  EXIT.
+       
+       310000-OPEN.
+
+           MOVE "310000-OPEN" 
+             TO WS-PARAGRAPH.
+
+           OPEN I-O ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3506 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       310000-EXIT.  EXIT.
+
+       320000-READ.
+
+           MOVE "320000-READ" 
+             TO WS-PARAGRAPH.
+      
+           READ ACFL0000-FILE
+              RECORD KEY IS ACFL0000-KEY OF ACFL0000-REC.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-READ-CNT
+           ELSE
+               IF  (WS-ACFL0000-FILE-STATUS = '23')
+                   NEXT SENTENCE
+               ELSE
+                   MOVE 3507 TO ACLS0000-RC
+                   PERFORM 999999-ERROR
+                      THRU 999999-EXIT
+                   GO TO 000000-EXIT
+               END-IF
+           END-IF.
+
+       320000-EXIT.  EXIT.
+        
+       330000-UPDATE.
+        
+           MOVE "330000-UPDATE"
+             TO WS-PARAGRAPH.
+
+           MOVE ACLS0000-DATA 
+             TO ACFL0000-DATA OF ACFL0000-REC.
+              
+       330000-EXIT.  EXIT.
+
+       340000-REWRITE.
+
+           MOVE "340000-REWRITE" 
+             TO WS-PARAGRAPH.
+      
+           REWRITE ACFL0000-REC.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-UPDATE-CNT
+           ELSE
+               MOVE 3508 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+
+       340000-EXIT.  EXIT.
+
+       350000-CLOSE.
+               
+           MOVE "350000-CLOSE" 
+             TO WS-PARAGRAPH.
+
+           CLOSE ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3509 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       350000-EXIT.  EXIT.
+ 
+       400000-PICK.
+        
+           MOVE "400000-PICK"
+             TO WS-PARAGRAPH.
+
+           PERFORM 410000-OPEN
+              THRU 410000-EXIT.
+
+           MOVE ACLS0000-KEY
+             TO ACFL0000-KEY OF ACFL0000-REC.
+
+           PERFORM 420000-READ
+              THRU 420000-EXIT.
+
+           PERFORM 430000-CLOSE
+              THRU 430000-EXIT.
+
+       400000-EXIT.  EXIT.
+       
+       410000-OPEN.
+
+           MOVE "410000-OPEN" 
+             TO WS-PARAGRAPH.
+
+           OPEN I-O ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3510 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       410000-EXIT.  EXIT.
+
+       420000-READ.
+
+           MOVE "420000-READ" 
+             TO WS-PARAGRAPH.
+      
+           READ ACFL0000-FILE
+              RECORD KEY IS ACFL0000-KEY OF ACFL0000-REC.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-READ-CNT
+           ELSE
+               IF  (WS-ACFL0000-FILE-STATUS = '23')
+                   NEXT SENTENCE
+               ELSE
+                   MOVE 3511 TO ACLS0000-RC
+                   PERFORM 999999-ERROR
+                      THRU 999999-EXIT
+                   GO TO 000000-EXIT
+               END-IF
+           END-IF.
+
+       420000-EXIT.  EXIT.
+
+       430000-CLOSE.
+               
+           MOVE "430000-CLOSE" 
+             TO WS-PARAGRAPH.
+
+           CLOSE ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3512 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       430000-EXIT.  EXIT.
+ 
+       500000-DELETE.
+        
+           MOVE "500000-DELETE"
+             TO WS-PARAGRAPH.
+
+           PERFORM 510000-OPEN
+              THRU 510000-EXIT.
+
+           MOVE ACLS0000-KEY
+             TO ACFL0000-KEY OF ACFL0000-REC.
+
+           PERFORM 520000-READ
+              THRU 520000-EXIT.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '23')
+               GO TO 500000-NEXT
+           END-IF.
+
+           PERFORM 530000-DELETE
+              THRU 530000-EXIT.
+       
+       500000-NEXT.
+
+           PERFORM 540000-CLOSE
+              THRU 540000-EXIT.
+
+       500000-EXIT.  EXIT.
+       
+       510000-OPEN.
+
+           MOVE "510000-OPEN" 
+             TO WS-PARAGRAPH.
+
+           OPEN I-O ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3513 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       510000-EXIT.  EXIT.
+
+       520000-READ.
+
+           MOVE "520000-READ" 
+             TO WS-PARAGRAPH.
+      
+           READ ACFL0000-FILE
+              RECORD KEY IS ACFL0000-KEY OF ACFL0000-REC.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-READ-CNT
+           ELSE
+               IF  (WS-ACFL0000-FILE-STATUS = '23')
+                   NEXT SENTENCE
+               ELSE
+                   MOVE 3514 TO ACLS0000-RC
+                   PERFORM 999999-ERROR
+                      THRU 999999-EXIT
+                   GO TO 000000-EXIT
+               END-IF
+           END-IF.
+
+       520000-EXIT.  EXIT.
+
+       530000-DELETE.
+
+           MOVE "530000-DELETE" 
+             TO WS-PARAGRAPH.
+      
+           DELETE ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               ADD +1 TO WS-ACFL0000-DELETE-CNT
+           ELSE
+               MOVE 3515 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+
+       530000-EXIT.  EXIT.
+
+       540000-CLOSE.
+               
+           MOVE "540000-CLOSE" 
+             TO WS-PARAGRAPH.
+
+           CLOSE ACFL0000-FILE.
+
+           IF  (WS-ACFL0000-FILE-STATUS = '00')
+               NEXT SENTENCE
+           ELSE
+               MOVE 3516 TO ACLS0000-RC
+               PERFORM 999999-ERROR
+                  THRU 999999-EXIT
+               GO TO 000000-EXIT
+           END-IF.
+      
+       540000-EXIT.  EXIT.
+
+       999999-ERROR.
+
+           DISPLAY "ACLF0000"
+                   " " WS-PARAGRAPH
+                   " FILE STATUS " WS-ACFL0000-FILE-STATUS
+                   " RC " ACLS0000-RC.
+
+       999999-EXIT.  EXIT.      
+       END PROGRAM ACFL0000.  
+                  

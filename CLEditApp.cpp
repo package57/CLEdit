@@ -2,7 +2,7 @@
 #include <wx/wx.h>
 #include "CLEditApp.h"
 #include "CLEditMain.h"
-
+using namespace std;
 IMPLEMENT_APP(CLEditApp);
 
 bool CLEditApp::OnInit()

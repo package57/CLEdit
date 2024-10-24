@@ -1,7 +1,7 @@
 #include <iostream>
 #include <wx/wx.h>
 #include "CLEditMain.h"
-
+using namespace std;
 CLEditFrame::CLEditFrame(const wxString & title)
 : wxFrame(nullptr
           ,wxID_ANY
@@ -32,8 +32,6 @@ void CLEditFrame::CreateControls()
 
     Panel = new wxPanel(this);
 
-    //this->Bind(wxEVT_CLOSE_WINDOW, & CLEditFrame::OnExitClicked, this);
-
     Command = new wxTextCtrl(Panel
                              ,wxID_ANY
                              ,"enter command here"
@@ -51,8 +49,6 @@ void CLEditFrame::CreateControls()
                          ,wxSize(50,20)
                          ,wxBORDER_NONE
                         );
-
-//    Apply->Bind(wxEVT_BUTTON, & CLEditFrame::OnApplyClicked, this);
 
     Line01 = new wxTextCtrl(Panel
                            ,wxID_ANY
@@ -160,55 +156,65 @@ void CLEditFrame::CreateControls()
 void CLEditFrame::BindEvents()
 {
 
-  this->Bind(wxEVT_KEY_DOWN, & CLEditFrame::OnKeyEvent, this);
+  //Panel->Bind(wxEVT_CHAR_HOOK, & CLEditFrame::OnKeyDown, this);
 
-  this->Bind(wxEVT_CLOSE_WINDOW, & CLEditFrame::OnExitClicked, this);
+  Panel->Bind(wxEVT_CLOSE_WINDOW, & CLEditFrame::OnExitClicked, this);
 
   Apply->Bind(wxEVT_BUTTON, & CLEditFrame::OnApplyClicked, this);
 
 }
-void CLEditFrame::OnKeyEvent(wxKeyEvent & event)
+void CLEditFrame::OnKeyDown(wxKeyEvent & event)
 {
     ReturnFunction = "OnKeyEvent ";
     ReturnCode = "0000 ";
+    ReturnMessage = "Key?";
 
     switch ( event.GetKeyCode() )
     {
-        case WXK_NONE:
-            ReturnMessage = "No Key";
         case WXK_CONTROL_F:
         case WXK_F5:
             ReturnMessage = "Find ";
+            OnTerminal();
+            break;
         case WXK_END:
         case WXK_NUMPAD_END:
             ReturnMessage = "Bottom ";
+            OnTerminal();
+            break;
         case WXK_HOME:
         case WXK_NUMPAD_BEGIN:
             ReturnMessage = "Home ";
+            OnTerminal();
+            break;
         case WXK_UP:
         case WXK_F7:
         case WXK_PAGEUP:
         case WXK_NUMPAD_UP:
         case WXK_NUMPAD_PAGEUP:
             ReturnMessage = "Up ";
+            OnTerminal();
+            break;
         case WXK_DOWN:
         case WXK_F8:
         case WXK_PAGEDOWN:
         case WXK_NUMPAD_DOWN:
         case WXK_NUMPAD_PAGEDOWN:
             ReturnMessage = "Down ";
+            OnTerminal();
+            break;
         case WXK_HELP:
         case WXK_F1:
             ReturnMessage = "Help ";
+            OnTerminal();
+            break;
 //      case WXK_F2: split
 //      case WXK_F3: return
         //      case WXK_F4: menu
         case WXK_F6:
             ReturnMessage = "Change ";
+            OnTerminal();
+            break;
     }
-
-    OnTerminal();
-
 }
 void CLEditFrame::OnExitClicked(wxCloseEvent & event)
 {
@@ -244,13 +250,24 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
 
     Commandstr = Command->GetLineText(0); //GetValue();
 
+    PrimaryCommand = "";
+    FirstParameter = "";
+    SecondParameter = "";
+    ThirdParameter = "";
     FindPrimary();
 
-    FindFirst();
-
-    FindSecond();
-
-    FindThird();
+    if (strpos > 0)
+    {
+        FindFirst();
+        if (strpos > 0)
+        {
+            FindSecond();
+            if (strpos > 0)
+            {
+                FindThird();
+            }
+        }
+    }
 
 //change string tostring f6 all
     if (PrimaryCommand == "change")
@@ -265,6 +282,7 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
     {
         Progressstr += "copy begun \n";
         Progress->SetLabel(Progressstr);
+        CopyFile();
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + ThirdParameter + " applied");
         goto exitOnApplyClicked;
     }
@@ -317,6 +335,15 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + ThirdParameter + " applied");
         goto exitOnApplyClicked;
     }
+//stage database
+    if (PrimaryCommand == "stage")
+    {
+        Progressstr += "stage begun \n";
+        Progress->SetLabel(Progressstr);
+        Stage();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + ThirdParameter + " applied");
+        goto exitOnApplyClicked;
+    }
 
     wxLogStatus("Changes Applied");
 
@@ -333,8 +360,6 @@ void CLEditFrame::FindPrimary()
 
     Progressstr += "Find Primary Command \n";
     Progress->SetLabel(Progressstr);
-
-    PrimaryCommand = "";
 
     for (i = 0; i < Commandl; i++)
     {
@@ -359,8 +384,6 @@ void CLEditFrame::FindFirst()
 
     Progressstr += "Find First Parameter \n";
     Progress->SetLabel(Progressstr);
-
-    FirstParameter = "";
 
     for (i = strpos; i < Commandl; i++)
     {
@@ -393,8 +416,6 @@ void CLEditFrame::FindSecond()
     Progressstr += "Find Second Parameter \n";
     Progress->SetLabel(Progressstr);
 
-    SecondParameter = "";
-
     for (i = strpos; i < Commandl; i++)
     {
         if  (Commandstr[i] == ' ')
@@ -425,8 +446,6 @@ void CLEditFrame::FindThird()
 
     Progressstr += "Find Third Parameter \n";
     Progress->SetLabel(Progressstr);
-
-    ThirdParameter = "";
 
     for (i = strpos; i < Commandl; i++)
     {
@@ -562,4 +581,35 @@ void CLEditFrame::OnTerminal()
 
     std::cout << ReturnFunction << ReturnCode << ReturnMessage << std::endl;
 
+}
+void CLEditFrame::CopyFile()
+{
+
+    CF.fileiname = "/home/pierre/CLEdit/CLEditCF-in.txt";
+    CF.fileoname = "/home/pierre/CLEdit/CLEditCF-out.txt";
+
+    CLEditCFrc = CF.copyfile(CF.fileiname, CF.fileoname);
+
+}
+void CLEditFrame::Stage()
+{
+// the next three lines are the equivalent of an "open"
+//create a driver object
+    DB.Driver();
+//create a connection object
+    DB.Connect();
+//create a statement object
+    DB.Statement();
+
+    rowcnt = DB.Cursor();
+
+    std::cout << "stage rows " << rowcnt << std::endl;
+
+    if  (rowcnt > 0)
+    {
+// dump all the rows in the table
+        DB.Process();
+    }
+// "close" the database
+    DB.Free();
 }

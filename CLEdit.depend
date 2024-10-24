@@ -1,10 +1,12 @@
 # depslib dependency file v1.0
-1729446183 source:/home/pierre/CLEdit/CLEditMain.cpp
+1729620102 source:/home/pierre/CLEdit/CLEditMain.cpp
 	<iostream>
 	<wx/wx.h>
 	"CLEditMain.h"
 
-1729447662 /home/pierre/CLEdit/CLEditMain.h
+1729686831 /home/pierre/CLEdit/CLEditMain.h
+	"CLEditCF.h"
+	"CLEditDB.h"
 	<wx/wx.h>
 
 1728316663 /usr/local/include/wx-3.2/wx/wx.h
@@ -1633,12 +1635,37 @@
 1728316664 /usr/local/include/wx-3.2/wx/gtk/mdi.h
 	"wx/frame.h"
 
-1729180345 /home/pierre/CLEdit/CLEditApp.h
+1729686831 /home/pierre/CLEdit/CLEditApp.h
 	<wx/wx.h>
 
-1729262454 source:/home/pierre/CLEdit/CLEditApp.cpp
+1729685807 source:/home/pierre/CLEdit/CLEditApp.cpp
 	<iostream>
 	<wx/wx.h>
 	"CLEditApp.h"
 	"CLEditMain.h"
+
+1729686828 /home/pierre/CLEdit/include/CLEditCF.h
+	<stdio.h>
+	<iostream>
+	<fstream>
+	<string>
+	<ctime>
+	<ctype.h>
+
+1729598206 source:/home/pierre/CLEdit/src/CLEditCF.cpp
+	"CLEditCF.h"
+
+1729700504 source:/home/pierre/CLEdit/src/CLEditDB.cpp
+	"CLEditDB.h"
+
+1729699497 /home/pierre/CLEdit/include/CLEditDB.h
+	<stdlib.h>
+	<iostream>
+	"mysql_driver.h"
+	"mysql_connection.h"
+	<cppconn/driver.h>
+	<cppconn/exception.h>
+	<cppconn/resultset.h>
+	<cppconn/statement.h>
+	<cppconn/prepared_statement.h>
 

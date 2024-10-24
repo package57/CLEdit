@@ -1,4 +1,8 @@
 #pragma once
+#ifndef CLEDITMAIN_H
+#define CLEDITMAIN_H
+#include "CLEditCF.h"
+#include "CLEditDB.h"
 #include <wx/wx.h>
 
 class CLEditFrame
@@ -71,7 +75,7 @@ class CLEditFrame
 // event handlers
         //void OnKeyDown(wxKeyEvent & event);
         void OnApplyClicked(wxCommandEvent & event);
-        void OnKeyEvent(wxKeyEvent & event);
+        void OnKeyDown(wxKeyEvent & event);
         void OnExitClicked(wxCloseEvent & event);
 // functions
         void EndLoop();
@@ -90,4 +94,26 @@ class CLEditFrame
         void LoopLine();
         void LoopCode();
         void LoopDump();
+
+// file processing
+// this is an instance of a class to process a file
+        CLEditCF CF;
+        int CLEditCFrc;
+
+// functions related to processing a file
+        void CopyFile();
+
+// database processing
+// this is an instance of a class to access the database
+        CLEditDB DB;
+        int rowcnt;
+        int CLEditDBrc;
+
+// functions related to database processing
+        void Stage();
+
+    protected:
+
+    private:
 };
+#endif // CLEDITMAIN_H
