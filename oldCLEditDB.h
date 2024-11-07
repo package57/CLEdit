@@ -1,3 +1,6 @@
+//#pragma once
+//#ifndef CLEDITDB_H
+//#define CLEDITDB_H
 #include <stdlib.h>
 #include <iostream>
 
@@ -14,7 +17,7 @@
 //#include <cppconn/metadata.h>
 //#include <cppconn/resultset_metadata.h>
 //#include <cppconn/warning.h>
-using namespace std;
+
 class CLEditDB
 {
     public:
@@ -25,23 +28,15 @@ class CLEditDB
         int errorcode = 0;
         int rowcnt = 0;
         int abendi;
-        int u;
 
         std::string what = "";
         std::string state = "";
-
-        struct InputFile
-        {
-            std::string IFCode; // the line of code
-        };
-        InputFile inputfile[25000];  // 23,000 line is the biggest single block of code I've ever seen aka "203"
 
         sql::Driver * driver;
         sql::Connection * con;
         sql::Statement * stmt;
         sql::ResultSet * res;
 
-        void InitInputFile();
         void Driver();
         void Connect();
         void Statement();
@@ -55,3 +50,4 @@ class CLEditDB
 
     private:
 };
+//#endif // CLEDITDB
