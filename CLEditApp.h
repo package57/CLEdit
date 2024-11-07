@@ -1,10 +1,6 @@
-#pragma once
-#ifndef CLEDITAPP_H
-#define CLEDITAPP_H
 #include <wx/wx.h>
-
-class CLEditApp
-: public wxApp
+using namespace std;
+class CLEditApp : public wxApp
 {
     public:
 
@@ -14,4 +10,3 @@ class CLEditApp
 
     private:
 };
-#endif // CLEDITAPP_H

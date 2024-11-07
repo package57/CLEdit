@@ -3,6 +3,7 @@
 #include "CLEditApp.h"
 #include "CLEditMain.h"
 using namespace std;
+
 IMPLEMENT_APP(CLEditApp);
 
 bool CLEditApp::OnInit()
@@ -10,7 +11,7 @@ bool CLEditApp::OnInit()
 
     CLEditFrame * frame = new CLEditFrame("CLEdit @yourCommand");
 
-    frame->SetClientSize(1920,1020);
+    frame->SetClientSize(1670,1020);
 
     frame->Center();
 

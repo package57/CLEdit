@@ -1,0 +1,114 @@
+Create Controls 
+Initialize 
+Init Screen 
+Init User Input 
+Init Input File 
+Init Work File 
+Init Copy / Block Copy 
+Init Move / Block Move 
+Init Overlay / Block Overlay 
+Init Repeat / Block Repeat 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+OnKeyDown 
+On Apply Clicked 
+Length 0
+Read Screen 
+Init User Input 
+Init Input File 
+ApplyChanges 
+Apply CC 
+Apply DD 
+Apply MM 
+Apply OO 
+Apply >> 
+Apply <<  
+Look for XX 
+Load Screen 
