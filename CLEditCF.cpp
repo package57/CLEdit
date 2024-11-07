@@ -12,97 +12,191 @@ CLEditCF::~CLEditCF()
 
 int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
 {
+    mode = "copy";
+
     start_s = clock();
 
-    CLEditCF::init();
+    init();
 
-    CLEditCF::openfo();   // exit on error
+    openfo();
 
-    CLEditCF::openfi();   // exit on error
+    if (abendi != 0)
+    {
+        goto copyexit;
+    }
+
+    openfi();
+
+    if (abendi != 0)
+    {
+        goto copyexit;
+    }
 
     i = 0;  //used to track position
     j = 0;  //used for logical record length
 
-    CLEditCF::readfir();
+    readfir();
 
     while (fileitellg > 0)  // at end of file the read returns -1
     {
-        CLEditCF::processfir();
+        processfir();
     }
 
-    CLEditCF::closefi();
+    closefi();
 
-    CLEditCF::closefo();
+    closefo();
 
-    CLEditCF::eop();
+    eop();
 
     stop_s = clock();
     std::cout << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
-    return 0;
+copyexit:
+
+    return abendi;
 
 }
 
-void CLEditCF::init()
+int CLEditCF::openfile(std::string fileiname)
+{
+    mode = "open";
+
+    start_s = clock();
+
+    init();
+
+    openfi();
+
+    if (abendi != 0)
+    {
+        goto openexit;
+    }
+
+    inputfile[0].IFCode = "";
+    for (i = 1; i < 25000; i++)
+    {
+        inputfile[i] = inputfile[0];
+    }
+
+    i = 0;  //used to track position
+    j = 0;  //used for logical record length
+    Outreccnt = 0;
+
+    readfir();
+
+    while (fileitellg > 0)  // at end of file the read returns -1
+    {
+        processfir();
+    }
+
+    closefi();
+
+    eop();
+
+    stop_s = clock();
+    std::cout << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+
+openexit:
+
+    return abendi;
+
+}
+int CLEditCF::savefile(std::string fileoname)
+{
+    mode = "save";
+
+    start_s = clock();
+
+    init();
+
+    openfo();
+
+    if (abendi != 0)
+    {
+        goto saveexit;
+    }
+
+    for (i = 0; i < fileoreccnt; i++)
+    {
+        stringtochar();
+        writefor();
+        initsavefileir();
+    }
+
+    closefo();
+
+    eop();
+
+    stop_s = clock();
+    std::cout << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+
+saveexit:
+
+    return abendi;
+
+}
+void CLEditCF::stringtochar()
 {
 
-    debug = false;
-
-    if  (debug)
+    for (l = 0; l < 81; l++)
     {
-        std::cout << "init" << std::endl;
+        arr[l] = '\0';     // set to null
     }
+
+    strcpy(arr, inputfile[i].IFCode.c_str());
+
+    k = inputfile[i].IFCode.length();
+
+    for (l = 0; l < k; l++)
+    {
+        fileir[l] = arr[l];
+    }
+
+}
+void CLEditCF::init()
+{
 
     std::time_t currentdatetime = std::time(nullptr);
 
     std::cout << "Welcome " << std::ctime(&currentdatetime) << std::endl;
+
+    for (l = 0; l < 81; l++)
+    {
+        arr[l] = '\0';     // set to null
+    }
+
+    str = "";
 
 }
 
 void CLEditCF::openfo()
 {
 
-    if  (debug)
-    {
-        std::cout << "openfo" << std::endl;
-    }
-
     fileo.open(fileoname, std::ios::out);
 
     if  (!fileo.is_open())
     {
-        msg = "file Out Open error";
+        msg = "TO file Open error";
         abendi = 3500;
-        CLEditCF::abnormal(); // exits program
     }
+
 }
 
 void CLEditCF::openfi()
 {
 
-    if  (debug)
-    {
-        std::cout << "openfi" << std::endl;
-    }
-
-     filei.open(fileiname, std::ios::in );
+    filei.open(fileiname, std::ios::in );
 
     if  (!filei.is_open())
     {
-        msg = "file In Open error";
+        msg = "FROM file Open error";
         abendi = 3501;
-        CLEditCF::abnormal();   // exits program
     }
 
 }
 
 void CLEditCF::closefi()
 {
-
-    if  (debug)
-    {
-        std::cout << "closefi" << std::endl;
-    }
 
     filei.close();
 
@@ -111,22 +205,12 @@ void CLEditCF::closefi()
 void CLEditCF::closefo()
 {
 
-    if  (debug)
-    {
-        std::cout << "closefo" << std::endl;
-    }
-
     fileo.close();
 
 }
 
 void CLEditCF::eop()
 {
-
-    if  (debug)
-    {
-        std::cout << "eop" << std::endl;
-    }
 
     std::cout << "File In Bytes " << fileibytecnt << std::endl;
 
@@ -137,12 +221,6 @@ void CLEditCF::eop()
 void CLEditCF::processfir()
 {
 
-   if  (debug)
-    {
-        std::cout << "processfir" << std::endl;
-        std::cout << "look " << fileic << std::endl;
-    }
-
     j++;
 
     fileir[i] = fileic;
@@ -151,20 +229,15 @@ void CLEditCF::processfir()
 
     if  (fileic == '\n')
     {
-       CLEditCF::processfor();
+       processfor();
     }
 
-    CLEditCF::readfir();
+    readfir();
 
 }
 
 void CLEditCF::readfir()
 {
-
-    if  (debug)
-    {
-        std::cout << "readfir" << std::endl;
-    }
 
     fileic = filei.get();   // one byte at a time
 
@@ -180,24 +253,26 @@ void CLEditCF::readfir()
 void CLEditCF::processfor()
 {
 
-    if  (debug)
+    if  (mode == "copy")
     {
-        std::cout << "processfor" << std::endl;
+        writefor();
+    }
+    else
+    {
+        if  (mode == "open")
+        {
+            fileireccnt++;
+            inputfile[Outreccnt].IFCode = fileir;
+            Outreccnt++;
+        }
     }
 
-    CLEditCF::writefor();
-
-    CLEditCF::initfileir();
+    initfileir();
 
 }
 
 void CLEditCF::writefor()
 {
-
-    if  (debug)
-    {
-        std::cout << "writefor" << std::endl;
-    }
 
     fileo << fileir;
 
@@ -207,11 +282,6 @@ void CLEditCF::writefor()
 
 void CLEditCF::initfileir()
 {
-
-    if  (debug)
-    {
-        std::cout << "initfileir" << std::endl;
-    }
 
     for (i = 0; i < j; i++)   // i < j to save time
     {
@@ -223,11 +293,12 @@ void CLEditCF::initfileir()
 
 }
 
- void CLEditCF::abnormal()
- {
+void CLEditCF::initsavefileir()
+{
 
-    std::cout << msg << " : " << abendi << std::endl;
+    for (l = 0; l < k; l++)
+    {
+        fileir[l] = '\0'; //set to null
+    }
 
-    exit(abendi);
-
- }
+}

@@ -39,7 +39,7 @@ void CLEditDB::Connect()
     std::cout << std::endl;
     try
     {
-        con = driver->connect("localhost", "root", "root");
+        con = driver->connect("localhost", "CLEdit", "CLEdit");    //host,user,pass
         con->setSchema("mydb");
     }
     catch (sql::SQLException &e)
@@ -76,8 +76,15 @@ int CLEditDB::Cursor()
     std::cout << std::endl;
     try
     {
-        res = stmt->executeQuery("SELECT COUNT(*) FROM mydb.CLEdit ");
-        //rowcnt = ROW_RESULT;
+        res = stmt->executeQuery("SELECT COUNT(*) AS total FROM mydb.CLEdit;");
+        if (res->next())
+        {
+            rowcnt = res->getInt("total");
+        }
+        else
+        {
+            rowcnt = 0;
+        }
     }
     catch (sql::SQLException &e)
     {
@@ -92,7 +99,7 @@ int CLEditDB::Cursor()
     std::cout << std::endl;
     try
     {
-        res = stmt->executeQuery("SELECT * FROM mydb.CLEdit ");
+        res = stmt->executeQuery("SELECT * FROM mydb.CLEdit;");
     }
     catch (sql::SQLException &e)
     {
@@ -104,19 +111,35 @@ int CLEditDB::Cursor()
 
     return rowcnt;
 }
+void CLEditDB::InitInputFile()
+{
+
+    inputfile[0].IFCode = "";
+
+    for (u = 1; u < 25000; u++)
+    {
+        inputfile[u] = inputfile[0];
+    }
+
+}
 void CLEditDB::Process()
 {
+    InitInputFile();
+
     std::cout << std::endl;
     std::cout << "Running CLEditDB - Process";
     std::cout << std::endl;
     try
     {
+        int i = 0;
         while (res->next())
         {
             std::cout << "CLEdit ";
-            std::cout << " id "      << res->getInt("idCLEdit");
-            std::cout << " line " << res->getString("CLEditcol");
+            std::cout << " id "   << res->getInt("idCLEdit");
+            std::cout << " line " << res->getString("CLEditcode");
             std::cout << endl;
+            inputfile[i].IFCode = res->getString("CLEditcode");
+            i++;
         }
     }
     catch (sql::SQLException &e)
