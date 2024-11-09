@@ -35,38 +35,57 @@ CLEditFrame::CLEditFrame(const wxString & title)
 void CLEditFrame::OnKeyDown(wxKeyEvent & event)
 {
 
-    LogFile << "OnKeyDown " << std::endl;
-
     switch ( event.GetKeyCode() )
     {
         case WXK_CONTROL_F:
         case WXK_F5:
+            LogFile << "F5 " << std::endl;
+            ProcessScreen();
             Find();
+            LoadScreen();
             break;
         case WXK_END:
         case WXK_NUMPAD_END:
+            LogFile << "End " << std::endl;
+            ProcessScreen();
             Bottom();
+            LoadScreen();
             break;
         case WXK_HOME:
         case WXK_NUMPAD_BEGIN:
+            LogFile << "Home " << std::endl;
+            ProcessScreen();
             Home();
+            LoadScreen();
             break;
         case WXK_F7:
         case WXK_PAGEUP:
         case WXK_NUMPAD_PAGEUP:
+            LogFile << "F7 " << std::endl;
+            ProcessScreen();
             Up();
+            LoadScreen();
             break;
         case WXK_F8:
         case WXK_PAGEDOWN:
         case WXK_NUMPAD_PAGEDOWN:
+            LogFile << "F8 " << std::endl;
+            ProcessScreen();
             Down();
+            LoadScreen();
             break;
         case WXK_HELP:
         case WXK_F1:
+            LogFile << "F1 " << std::endl;
+            ProcessScreen();
             Help();
+            LoadScreen();
             break;
         case WXK_F6:
+            LogFile << "F6 " << std::endl;
+            ProcessScreen();
             Change();
+            LoadScreen();
             break;
     }
 
@@ -77,6 +96,7 @@ void CLEditFrame::Find()
 {
     LogFile << "Find " << std::endl;
 
+//  LoadScreen();   //always from work input
 
     wxLogStatus("Find applied");
 }
@@ -90,13 +110,13 @@ void CLEditFrame::Bottom()
         lastl *= 50;
         lastl++;
         frstl = lastl;
-        LoadScreen();   //always from work input
+//      LoadScreen();   //always from work input
         wxLogStatus("Bottom end of file");
     }
     else
     {
         frstl = 1;
-        LoadScreen();   //always from work input
+//      LoadScreen();   //always from work input
         wxLogStatus("Bottom end of file");
     }
 }
@@ -106,7 +126,7 @@ void CLEditFrame::Home()
 
     frstl = 1;
 
-    LoadScreen();   //always from work input
+//  LoadScreen();   //always from work input
 
     wxLogStatus("Home applied");
 
@@ -122,7 +142,7 @@ void CLEditFrame::Up()
     else
     {
         frstl -= 50;
-        LoadScreen();   //always from work input
+//      LoadScreen();   //always from work input
         wxLogStatus("Up applied");
     }
 
@@ -134,7 +154,7 @@ void CLEditFrame::Down()
     if (wfilecnt > 50)
     {
         frstl += 50;
-        LoadScreen();   //always from work input
+//      LoadScreen();   //always from work input
         wxLogStatus("Down applied");
     }
     else
@@ -170,10 +190,7 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
 
     Commandstr = Command->GetLineText(0); //GetValue();
 
-    PrimaryCommand = "";
-    FirstParameter = "";
-    SecondParameter = "";
-    ThirdParameter = "";
+    WipeCommand();
 
     FindPrimary();
 
@@ -188,6 +205,13 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
                 FindThird();
             }
         }
+    }
+//create a file from a block copy
+    if (PrimaryCommand == "create")
+    {
+        Create();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " applied");
+        goto ExitOnApplyClicked;
     }
 //change string tostring f6 all
     if (PrimaryCommand == "change")
@@ -221,6 +245,11 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
         goto ExitOnApplyClicked;
     }
 //reset - clear all the command line actions
+    if (PrimaryCommand == "open")
+    {
+        OpenFile();
+        goto ExitOnApplyClicked;
+    }
 //save file
     if (PrimaryCommand == "save")
     {
@@ -290,6 +319,9 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
 MainProcess:
 
     ProcessScreen();
+
+// Load Screen always from index frstl
+    LoadScreen();
 
     Return = true;
 
@@ -429,6 +461,12 @@ void CLEditFrame::OnTerminal()
     ErrFile << ReturnFunction << ReturnCode << ReturnMessage << std::endl;
 
 }
+void CLEditFrame::Create()
+{
+
+    LogFile << "Create File " << std::endl;   // need a block copy and file name
+
+}
 void CLEditFrame::SaveFile()
 {
     LogFile << "Save File " << std::endl;
@@ -448,7 +486,8 @@ void CLEditFrame::SaveFile()
 
     for (i = 0; i < wfilecnt; i++)
     {
-         CF.inputfile[i].IFCode = winputfile[i].wIFCode;
+        SetEndl();
+        CF.inputfile[i].IFCode = winputfile[i].wIFCode;
     }
 
     CF.fileoname = CurrentFile;
@@ -468,10 +507,7 @@ void CLEditFrame::SaveFile()
 
 ExitSaveFile:
 
-    PrimaryCommand = "";
-    FirstParameter = "";
-    SecondParameter = "";
-    ThirdParameter = "";
+    WipeCommand();
 
 }
 void CLEditFrame::SaveAsFile()
@@ -491,7 +527,8 @@ void CLEditFrame::SaveAsFile()
 
     for (i = 0; i < wfilecnt; i++)
     {
-         CF.inputfile[i].IFCode = winputfile[i].wIFCode;
+        SetEndl();
+        CF.inputfile[i].IFCode = winputfile[i].wIFCode;
     }
 
     CF.fileoname = CurrentFile;
@@ -512,10 +549,7 @@ void CLEditFrame::SaveAsFile()
 
 ExitSaveAsFile:
 
-    PrimaryCommand = "";
-    FirstParameter = "";
-    SecondParameter = "";
-    ThirdParameter = "";
+    WipeCommand();
 
 }
 void CLEditFrame::Exit()
@@ -526,12 +560,31 @@ void CLEditFrame::Exit()
 
     wxLogStatus(PrimaryCommand + " applied");
 
-    PrimaryCommand = "";
-    FirstParameter = "";
-    SecondParameter = "";
-    ThirdParameter = "";
+    WipeCommand();
 
 }
+
+void CLEditFrame::Reset()
+{
+    LogFile << "Exit " << std::endl;
+// clear all line commands- especially X & XX
+
+    for (i = 1; i < 25000; i++)
+    {
+        inputfile[i].IFlc   = "000000";
+        winputfile[0].wIFlc = "000000";
+    }
+
+    frstl = 1;
+
+    LoadScreen();
+
+    wxLogStatus(PrimaryCommand + " applied");
+
+    WipeCommand();
+
+}
+
 void CLEditFrame::OpenFile()
 {
     LogFile << "Open File " << std::endl;
@@ -567,6 +620,7 @@ void CLEditFrame::OpenFile()
         inputfile[i].IFCode   = CF.inputfile[i].IFCode;
         winputfile[i].wIFlc   = "000000";
         winputfile[i].wIFCode = CF.inputfile[i].IFCode;
+        GetEndl();
     }
 
     wxLogStatus(PrimaryCommand + " " + FirstParameter + " applied");
@@ -577,10 +631,19 @@ void CLEditFrame::OpenFile()
 
 ExitOpenFile:
 
-    PrimaryCommand = "";
-    FirstParameter = "";
-    SecondParameter = "";
-    ThirdParameter = "";
+    WipeCommand();
+
+}
+void CLEditFrame::GetEndl()
+{
+
+    winputfile[i].wIFCode.erase(std::remove(winputfile[i].wIFCode.begin(), winputfile[i].wIFCode.end(), '\n'), winputfile[i].wIFCode.cend());
+
+}
+void CLEditFrame::SetEndl()
+{
+
+    winputfile[i].wIFCode += '\n';
 
 }
 void CLEditFrame::CopyFile()
@@ -617,10 +680,7 @@ void CLEditFrame::CopyFile()
 
 ExitCopyFile:
 
-    PrimaryCommand = "";
-    FirstParameter = "";
-    SecondParameter = "";
-    ThirdParameter = "";
+    WipeCommand();
 
 }
 void CLEditFrame::CLEditCFmsg()
@@ -665,6 +725,7 @@ void CLEditFrame::FromStage()
             inputfile[i].IFCode = DB.inputfile[i].IFCode;
             winputfile[i].wIFlc   = "000000";
             winputfile[i].wIFCode = DB.inputfile[i].IFCode;
+            SetEndl();
         }
     }
 // "close" the database
@@ -675,6 +736,8 @@ void CLEditFrame::FromStage()
     LoadScreen();
 
     wxLogStatus(PrimaryCommand + " applied");
+
+    WipeCommand();
 
 }
 void CLEditFrame::ToStage()
@@ -704,6 +767,7 @@ void CLEditFrame::ToStage()
             inputfile[i].IFCode = DB.inputfile[i].IFCode;
             winputfile[i].wIFlc   = "000000";
             winputfile[i].wIFCode = DB.inputfile[i].IFCode;
+            GetEndl();
         }
     }
 // "close" the database
@@ -714,6 +778,18 @@ void CLEditFrame::ToStage()
     LoadScreen();
 
     wxLogStatus(PrimaryCommand + " applied");
+
+    WipeCommand();
+
+}
+void CLEditFrame::WipeCommand()
+{
+
+    PrimaryCommand = "";
+    FirstParameter = "";
+    SecondParameter = "";
+    ThirdParameter = "";
+
 }
 void CLEditFrame::LoadScreen()
 {
@@ -769,7 +845,13 @@ void CLEditFrame::ProcessScreen()
 // copy Work Input to Input File
 // applying any changes - if possible - adjust wfilecnt
 // once all changes are applied - init all the command trackers and structures CC DD MM RR OO
+    badchanges = false;
     ApplyChanges();
+
+    if (badchanges)
+    {
+        return;
+    }
 
     if  (changesapplied)
     {
@@ -778,15 +860,11 @@ void CLEditFrame::ProcessScreen()
         InitOO();
         InitRR();
         InitCTrackers();
-        wxLogStatus("Changes applied");
     }
     else
     {
-        goto ExitProcess;
+        return;
     }
-
-// init Work Input
-    InitWIF();
 
 // copy from Input File back to Work Input
     for (i = 0; i < wfilecnt; i++)
@@ -811,11 +889,6 @@ void CLEditFrame::ProcessScreen()
         }
     }
 
-ExitProcess:
-
-// Load Screen always from index frstl
-    LoadScreen();
-
 }
 void CLEditFrame::ReadScreen()
 {
@@ -824,7 +897,7 @@ void CLEditFrame::ReadScreen()
 // user input
     InitUser();
 // capture everything from the text controls - line Command and line of Code
-    for (u =0; u < 50; u++)
+    for (u = 0; u < 50; u++)
     {
         UserLinel   = CL[u].Line->GetLineLength(0);
         UserLinestr = CL[u].Line->GetLineText(0);
@@ -832,6 +905,14 @@ void CLEditFrame::ReadScreen()
         UserCodestr = CL[u].Code->GetLineText(0);
         LoopLine();
         LoopCode();
+        if (!haveaFile)   // means we're starting from a blank screen not an open, from stage or copy after
+        {
+            if (UserCodestr != "")
+            {
+                wfilecnt = u;
+                wfilecnt++;    // off by one eh
+            }
+        }
     }
 
 }
@@ -853,18 +934,21 @@ void CLEditFrame::WhatCommand()
     if (UserLinestr[i] == 'A')
     {
         Input[u].Linestr = "A";
-        goto ExitWhat;
+        afters++;
+        i = 7; // stop looking
+        return;
     }
 
     if (UserLinestr[i] == 'B')
     {
         Input[u].Linestr = "B";
-        goto ExitWhat;
+        befores++;
+        i = 7; // stop looking
+        return;
     }
 
     if (UserLinestr[i] == 'C')
     {
-        singleC = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -872,19 +956,26 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "CC";
                 blockCC = true;
-                goto ExitWhat;
+                i = 7; // stop looking
+                return;
+            }
+            else
+            {
+                i = 7; // stop looking
+                return;
             }
         }
         else
         {
+            singleC++;
+            haveaC = u;
             Input[u].Linestr = "C";
-            goto ExitWhat;
+            return;
         }
     }
 
     if (UserLinestr[i] == 'D')
     {
-        singleD = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -892,24 +983,29 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "DD";
                 blockDD = true;
-                goto ExitWhat;
+                return;
+            }
+            else
+            {
+                i = 7; // stop looking
+                return;
             }
         }
         else
         {
+            singleD++;
             Input[u].Linestr = "D";
-            goto ExitWhat;
+            return;
         }
     }
 
 /*
-        bool singleI;  // insert a single line - can have a count
+        int singleI;  // insert a single line - can have a count
         int  Ii;       // number of lines to insert
 */
 
     if (UserLinestr[i] == 'M')
     {
-        singleM = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -917,19 +1013,25 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "MM";
                 blockMM = true;
-                goto ExitWhat;
+                return;
+            }
+            else
+            {
+                i = 7; // stop looking
+                return;
             }
         }
         else
         {
+            singleM++;
+            haveaM = u;
             Input[u].Linestr = "M";
-            goto ExitWhat;
+            return;
         }
     }
 
     if (UserLinestr[i] == 'O')
     {
-        singleO = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -937,19 +1039,26 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "OO";
                 blockOO = true;
-                goto ExitWhat;
+                i = 7; // stop looking
+                return;
+            }
+            else
+            {
+                i = 7; // stop looking
+                return;
             }
         }
         else
         {
+            singleO++;
+            haveaO = u;
             Input[u].Linestr = "O";
-            goto ExitWhat;
+            return;
         }
     }
 
     if (UserLinestr[i] == 'R')
     {
-        singleR = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -957,20 +1066,27 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "RR";
                 blockRR = true;
-                goto ExitWhat;
+                i = 7; // stop looking
+                return;
+            }
+            else
+            {
+                i = 7; // stop looking
+                return;
             }
         }
         else
         {
+            singleSR++;
+            haveaR = u;
             Input[u].Linestr = "R";
-            goto ExitWhat;
+            return;
         }
     }
 
 //        int  SRi;      // number of characters to shift right
     if (UserLinestr[i] == '>')
     {
-        singleSR = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -978,20 +1094,20 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = ">>";
                 blockSR = true;
-                goto ExitWhat;
+                return;
             }
         }
         else
         {
+            singleSR++;
             Input[u].Linestr = ">";
-            goto ExitWhat;
+            return;
         }
     }
 
 //   int  SLi;      // number of characters to shift left
     if (UserLinestr[i] == '<')
     {
-        singleSL = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -999,19 +1115,19 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "<<";
                 blockSL = true;
-                goto ExitWhat;
+                return;
             }
         }
         else
         {
+            singleSL++;
             Input[u].Linestr = "<";
-            goto ExitWhat;
+            return;
         }
     }
 
     if (UserLinestr[i] == 'X')
     {
-        singleX = true;
         if  (UserLinel > 1)
         {
             posp1 = i + 1;
@@ -1019,22 +1135,22 @@ void CLEditFrame::WhatCommand()
             {
                 Input[u].Linestr = "XX";
                 blockXX = true;
-                goto ExitWhat;
+                i = 7; // stop looking
+                return;
+            }
+            else
+            {
+                i = 7; // stop looking
+                return;
             }
         }
         else
         {
+            singleX++;
             Input[u].Linestr = "X";
-            goto ExitWhat;
+            return;
         }
     }
-
-        return;
-
-ExitWhat:
-
-        changesapplied = false;
-        i = 99;
 
 }
 void CLEditFrame::LoopCode()
@@ -1052,6 +1168,234 @@ void CLEditFrame::ApplyChanges()
 {
     LogFile << "ApplyChanges " << std::endl;
 
+    LookForLC();
+
+    if (badchanges)
+    {
+        return;
+    }
+
+    LCReasonability();
+
+    if (badchanges)
+    {
+        return;
+    }
+
+    LCcnt = CCcnt + MMcnt + OOcnt + RRcnt;
+
+    if (LCcnt != 0)
+    {
+        CaptureLC();  // blocks
+    }
+    else
+    {
+        LCcnt = haveaC + haveaM + haveaO + haveaR;
+        if (LCcnt != 0)
+        {
+            CaptureLC();  // blocks
+        }
+    }
+
+// ranges
+    if (blockMM
+    &&  blockOO)
+    {
+        if (OOstart < MMstart
+        &&  OOend < MMstart)
+        {
+            badchanges = false;
+        }
+        else
+        {
+            if (OOstart > MMend
+            &&  OOend > MMend)
+            {
+                badchanges = false;
+            }
+            else
+            {
+                wxLogStatus("block move / overlay overlapping ranges ");
+                badchanges = true;
+                return;
+            }
+        }
+    }
+
+// at the very lease - copy work to input - as is - without command line changes applied - yet
+
+    for (i = 0; i < wfilecnt; i++)
+    {
+        inputfile[i].IFlc   = winputfile[i].wIFlc;
+        inputfile[i].IFCode = winputfile[i].wIFCode;
+    }
+
+// is there anything to apply?
+    LCcnt = CCcnt + + DDcnt + MMcnt + OOcnt + RRcnt + SRcnt + SLcnt + XXcnt;
+    LCcnt = LCcnt + singleC + singleD + singleM + + singleO + singleR + singleSR + singleSR + singleX;
+
+    if (LCcnt == 0)
+    {
+        changesapplied = false;
+        return;
+    }
+
+// insert the lines to be copied where ever there is an After or a Before
+// block copy create - ! tbd
+// makes input file bigger
+    if (CCcnt == 2)
+    {
+        ApplyCC();
+    }
+
+// makes input file smaller
+    if (DDcnt == 2
+    ||  singleD > 0)
+    {
+        ApplyDD();
+    }
+
+// input file stays the same size
+    if  (MMcnt == 2)
+    {
+        ApplyMM();
+    }
+
+// input file becomes smaller by the InptOO size
+    if (OOcnt == 2)
+    {
+        ApplyOO();
+    }
+
+// makes input file bigger
+    if (RRcnt == 2)
+    {
+        ApplyRR();
+    }
+
+// no change to input file size
+    if (SRcnt == 2)
+    {
+        ApplySR();
+    }
+
+// no change to input file size
+    if (SLcnt == 2)
+    {
+        ApplySL();
+    }
+
+// no change to input file size
+// changes what can bee seen on the screen
+    if  (XXcnt == 2)
+    {
+        ApplyXX();
+    }
+
+//    wxLogStatus("changes applied");
+
+}
+void CLEditFrame::LCReasonability()
+{
+
+    LogFile << "LCReasonability " << std::endl;
+// multiple blocks and or multiple types os blocks are ambiguous
+// especially ones that cause file size changes
+    LCcnt = CCcnt + MMcnt + OOcnt + RRcnt;
+
+    if (LCcnt > 2)
+    {
+        wxLogStatus("block command ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if  (OOcnt == 2)
+    {
+        if  (MMcnt == 2)
+        {
+            badchanges = false;
+        }
+        else
+        {
+            wxLogStatus("block move missing for overlay ");
+            badchanges = true;
+            return;
+        }
+    }
+
+    LCcnt = singleC + singleM + singleO + singleR;
+
+    if (LCcnt > 1)
+    {
+        wxLogStatus("line commands ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if  (singleO == 1)
+    {
+        if  (singleM == 1)
+        {
+            badchanges = false;
+        }
+        else
+        {
+            wxLogStatus("line move missing for line overlay ");
+            badchanges = true;
+            return;
+        }
+    }
+
+    if (singleC > 1)
+    {
+        wxLogStatus("copy line command ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if (singleM > 1)
+    {
+        wxLogStatus("move line command ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if (singleO > 1)
+    {
+        wxLogStatus("overlay line command ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if (singleR > 1)
+    {
+        wxLogStatus("repeat line command ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if (blockCC
+    ||  blockMM
+    ||  blockOO
+    ||  blockRR)
+    {
+        if  (singleC > 0
+        ||   singleM > 0
+        ||   singleO > 0
+        ||   singleR > 0)
+        {
+            wxLogStatus("repeat line command ambiguous ");
+            badchanges = true;
+            return;
+        }
+    }
+
+}
+void CLEditFrame::LookForLC()
+{
+
+    CCcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForCC();
@@ -1060,15 +1404,18 @@ void CLEditFrame::ApplyChanges()
     if  (CCcnt > 2)
     {
         wxLogStatus("multiple block copies");
+        badchanges = true;
         return;
     }
 
     if  (CCcnt == 1)
     {
         wxLogStatus("missing block copy pair");
+        badchanges = true;
         return;
     }
 
+    DDcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForDD();
@@ -1077,15 +1424,18 @@ void CLEditFrame::ApplyChanges()
     if  (DDcnt > 2)
     {
         wxLogStatus("multiple block delete");
+        badchanges = true;
         return;
     }
 
     if  (DDcnt == 1)
     {
         wxLogStatus("missing block delete pair");
+        badchanges = true;
         return;
     }
 
+    MMcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForMM();
@@ -1094,15 +1444,18 @@ void CLEditFrame::ApplyChanges()
     if  (MMcnt > 2)
     {
         wxLogStatus("multiple block move");
+        badchanges = true;
         return;
     }
 
     if  (MMcnt == 1)
     {
         wxLogStatus("missing block move pair");
+        badchanges = true;
         return;
     }
 
+    OOcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForOO();
@@ -1111,6 +1464,7 @@ void CLEditFrame::ApplyChanges()
     if  (OOcnt > 2)
     {
         wxLogStatus("multiple block overlay");
+        badchanges = true;
         return;
     }
 
@@ -1119,6 +1473,28 @@ void CLEditFrame::ApplyChanges()
         wxLogStatus("missing block overlay pair");
         return;
     }
+
+    RRcnt = 0;
+    for (i = 0; i < wfilecnt; i++)
+    {
+        LookForRR();
+    }
+
+    if  (RRcnt > 2)
+    {
+        wxLogStatus("multiple block repeat");
+        badchanges = true;
+        return;
+    }
+
+    if  (RRcnt == 1)
+    {
+        wxLogStatus("missing block repeat pair");
+        badchanges = true;
+        return;
+    }
+
+    SRcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForSR();
@@ -1127,15 +1503,18 @@ void CLEditFrame::ApplyChanges()
     if  (SRcnt > 2)
     {
         wxLogStatus("multiple block shift right");
+        badchanges = true;
         return;
     }
 
     if  (SRcnt == 1)
     {
         wxLogStatus("missing block shift right pair");
+        badchanges = true;
         return;
     }
 
+    SLcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForSL();
@@ -1144,15 +1523,18 @@ void CLEditFrame::ApplyChanges()
     if  (SLcnt > 2)
     {
         wxLogStatus("multiple block shift left");
+        badchanges = true;
         return;
     }
 
     if  (SLcnt == 1)
     {
         wxLogStatus("missing block shift left pair");
+        badchanges = true;
         return;
     }
 
+    XXcnt = 0;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForXX();
@@ -1161,129 +1543,380 @@ void CLEditFrame::ApplyChanges()
     if  (XXcnt > 2)
     {
         wxLogStatus("multiple block exclude");
+        badchanges = true;
         return;
     }
 
     if  (XXcnt == 1)
     {
         wxLogStatus("missing block exclude pair");
+        badchanges = true;
         return;
     }
+}
+void CLEditFrame::CaptureLC()
+{
 
-        ApplyCC();
+    if (CCcnt == 2 || singleC == 1)
+    {
+        CaptureCC();
+    }
 
-        ApplyDD();
+    if (MMcnt == 2 || singleM == 1)
+    {
+        CaptureMM();
+    }
 
-        ApplyMM();
+    if (OOcnt == 2 || singleO == 1)
+    {
+        CaptureOO();
+    }
 
-        ApplyOO();
-
-        ApplySR();
-
-        ApplySL();
-
-        ApplyXX();
+    if (RRcnt == 2 || singleR == 1)
+    {
+        CaptureRR();
+    }
 
 }
 void CLEditFrame::LookForCC()
 {
+
     LogFile << "Look for CC " << std::endl;
 
+    CCstart = 9999;
     if (winputfile[i].wIFlc == "CC")
     {
         CCcnt++;
+        CCend = i;
+        if (CCstart == 9999)
+        {
+            CCstart = i;
+        }
+    }
+
+}
+void CLEditFrame::CaptureCC()
+{
+
+    LogFile << "Capture CC " << std::endl;
+
+    if (singleC == 1)
+    {
+        cinputfile.cIFCode = winputfile[haveaC].wIFCode;
+    }
+    else
+    {
+        l = 0;
+        for (i = CCstart; i > CCend; i++)
+        {
+            ccinputfile[l].cIFCode = winputfile[i].wIFCode;
+            l++;
+        }
     }
 
 }
 void CLEditFrame::LookForDD()
 {
+
     LogFile << "Look for DD " << std::endl;
 
+    DDstart = 9999;
     if (winputfile[i].wIFlc == "DD")
     {
         DDcnt++;
+        DDend = i;
+        if (DDstart == 9999)
+        {
+            DDstart = i;
+        }
     }
+
 }
+/*
+void CLEditFrame::CaptureDD()
+{
+
+    LogFile << "Capture DD " << std::endl;
+
+}
+*/
 void CLEditFrame::LookForMM()
 {
+
     LogFile << "Look for MM " << std::endl;
 
+    MMstart = 9999;
     if (winputfile[i].wIFlc == "MM")
     {
         MMcnt++;
+        MMend = i;
+        if (MMstart == 9999)
+        {
+            MMstart = i;
+        }
+    }
+
+}
+void CLEditFrame::CaptureMM()
+{
+
+    LogFile << "Capture MM " << std::endl;
+
+    if (singleM == 1)
+    {
+        minputfile.mIFCode = winputfile[haveaM].wIFCode;
+    }
+    else
+    {
+        l = 0;
+        for (i = MMstart; i > MMend; i++)
+        {
+            mminputfile[l].mIFCode = winputfile[i].wIFCode;
+            l++;
+        }
     }
 
 }
 void CLEditFrame::LookForOO()
 {
+
     LogFile << "Look for OO " << std::endl;
 
+    OOstart = 9999;
     if (winputfile[i].wIFlc == "OO")
     {
         OOcnt++;
+        OOend = i;
+        if (OOstart == 9999)
+        {
+            OOstart = i;
+        }
+    }
+
+}
+void CLEditFrame::CaptureOO()
+{
+
+    LogFile << "Capture OO " << std::endl;
+
+    if (singleO == 1)
+    {
+        oinputfile.oIFCode = winputfile[haveaO].wIFCode;
+    }
+    else
+    {
+        l = 0;
+        for (i = OOstart; i > OOend; i++)
+        {
+            ooinputfile[l].oIFCode = winputfile[i].wIFCode;
+            l++;
+        }
+    }
+
+}
+void CLEditFrame::LookForRR()
+{
+
+    LogFile << "Look for RR " << std::endl;
+
+    RRstart = 9999;
+    if (winputfile[i].wIFlc == "RR")
+    {
+        RRcnt++;
+        RRend = i;
+        if (RRstart == 9999)
+        {
+            RRstart = i;
+        }
+    }
+
+}
+void CLEditFrame::CaptureRR()
+{
+
+    LogFile << "Capture RR " << std::endl;
+
+    if (singleR == 1)
+    {
+        rinputfile.rIFCode = winputfile[haveaR].wIFCode;
+    }
+    else
+    {
+        l = 0;
+        for (i = RRstart; i > RRend; i++)
+        {
+            mminputfile[l].mIFCode = winputfile[i].wIFCode;
+            l++;
+        }
     }
 
 }
 void CLEditFrame::LookForSR()
 {
+
     LogFile << "Look for >> " << std::endl;
 
+    SRstart = 9999;
     if (winputfile[i].wIFlc == ">>")
     {
         SRcnt++;
+        SRend = i;
+        if (SRstart == 9999)
+        {
+            SRstart = i;
+        }
     }
 
 }
+/*
+void CLEditFrame::CaptureSR()
+{
+
+    LogFile << "Capture SR " << std::endl;
+
+}
+*/
 void CLEditFrame::LookForSL()
 {
+
     LogFile << "Look for << " << std::endl;
 
+    SLstart = 9999;
     if (winputfile[i].wIFlc == "<<")
     {
         SLcnt++;
+        SLend = i;
+        if (SLstart == 9999)
+        {
+            SLstart = i;
+        }
     }
 
 }
+/*
+void CLEditFrame::CaptureSL()
+{
+
+    LogFile << "Capture SL " << std::endl;
+
+}
+*/
 void CLEditFrame::LookForXX()
 {
+
     LogFile << "Look for XX " << std::endl;
 
+    XXstart = 9999;
     if (winputfile[i].wIFlc == "XX")
     {
         XXcnt++;
+        XXend = i;
+        if (XXstart == 9999)
+        {
+            XXstart = i;
+        }
     }
 
 }
+/*
+void CLEditFrame::CaptureXX()
+{
+
+    LogFile << "Capture XX " << std::endl;
+
+}
+*/
 void CLEditFrame::ApplyCC()
 {
+
     LogFile << "Apply CC " << std::endl;
 }
 void CLEditFrame::ApplyDD()
 {
+// reduces the file size
     LogFile << "Apply DD " << std::endl;
+
+    oldwfilecnt = wfilecnt;
+
+    InitWIF();
+
+    for (i = 0; i < oldwfilecnt; i++)
+    {
+        if (singleD > 0) // this is the number of line deletes
+        {
+            LineDelete();
+        }
+        else // this is a block delete
+        {
+            BlockDelete();
+        }
+    }
+
+    changesapplied = true;
+
+}
+void CLEditFrame::LineDelete()
+{
+
+    if (inputfile[i].IFlc == "D")
+    {
+        wfilecnt--;  // skip the record
+    }
+    else
+    {
+        winputfile[i].wIFlc   = inputfile[i].IFlc;
+        winputfile[i].wIFCode = inputfile[i].IFCode;
+    }
+
+}
+void CLEditFrame::BlockDelete()
+{
+
+    if (i >= DDstart
+    &&  i <= DDend)
+    {
+        wfilecnt--;  // skip the record
+    }
+    else
+    {
+        winputfile[i].wIFlc   = inputfile[i].IFlc;
+        winputfile[i].wIFCode = inputfile[i].IFCode;
+    }
+
 }
 void CLEditFrame::ApplyMM()
 {
+
     LogFile << "Apply MM " << std::endl;
 }
 void CLEditFrame::ApplyOO()
 {
+
     LogFile << "Apply OO " << std::endl;
+}
+void CLEditFrame::ApplyRR()
+{
+
+    LogFile << "Apply RR " << std::endl;
 }
 void CLEditFrame::ApplySR()
 {
+
     LogFile << "Apply >> " << std::endl;
 }
 void CLEditFrame::ApplySL()
 {
+
     LogFile << "Apply <<  " << std::endl;
 }
 void CLEditFrame::ApplyXX()
 {
+
     LogFile << "Look for XX " << std::endl;
 }
 void CLEditFrame::Initialize()
 {
+
     LogFile << "Initialize " << std::endl;
 
 // screen
@@ -1301,7 +1934,7 @@ void CLEditFrame::Initialize()
     SecondParameter = "";
     ThirdParameter  = "";
 
-// this is the "screen" 30 lines of visible code ( line command area 6 bytes / line of code 80 bytes)
+// this is the "screen" 50 lines of visible code ( line command area 6 bytes / line of code 80 bytes)
     InitUser();
 // to make the line command area pretty "000010"
 //      ostringstream os;     defined local because otherwise it concatenates
@@ -1333,42 +1966,62 @@ void CLEditFrame::InitCTrackers()
 {
 
     changesapplied = true;
+    badchanges = false;
+    afters = 0;
+    befores = 0;
+    LCcnt = 0;
 
     CCcnt   = 0;
-    singleC = false;  // Copy a line - need Before(s) or After(s)
+    CCstart = 0;
+    CCend   = 0;
+    singleC = 0;  // Copy a line - need Before(s) or After(s)
     blockCC = false;  // Copy a block - need Before(s) or After(s) - can be used in a Create
 
     DDcnt   = 0;
-    singleD = false;  // Delete a line
+    DDstart = 0;
+    DDend   = 0;
+    singleD = 0;  // Delete a line
     blockDD = false;  // Delete a block of lines
 
-    singleI = false;  // insert a single line - can have a count
+    singleI = 0;  // insert a single line - can have a count
     Ii = 0;           // number of lines to insert
 
     MMcnt   = 0;
-    singleM = false;  // Move a line - need Before(s) or After(s)
+    MMstart = 0;
+    MMend   = 0;
+    singleM = 0;  // Move a line - need Before(s) or After(s)
     blockMM = false;  // Move a block of lines - need Before(s) or After(s)
 
     OOcnt   = 0;
-    singleO = false;  // Overlay a line - needs single Move
+    OOstart = 0;
+    OOend   = 0;
+    singleO = 0;  // Overlay a line - needs single Move
     blockOO = false;  // Overlay a block of lines - needs a block Move
 
     RRcnt   = 0;
-    singleR = false;  // Repeat a line
+    RRstart = 0;
+    RRend   = 0;
+    singleR = 0;  // Repeat a line
     blockRR = false;  // Repeat a block of lines
 
     SRcnt    = 0;
-    singleSR = false; // right shift a line ">" - needs a number of characters (default is one space)
+    SRstart = 0;
+    SRend   = 0;
+    singleSR = 0; // right shift a line ">" - needs a number of characters (default is one space)
     SRi      = 0;          // number of characters to shift right
     blockSR  = false;  // right shift a block of lines ">>" - needs a number of characters (default is one space)
 
     SLcnt    = 0;
-    singleSL = false; // left shift a line "<" - needs a number of characters (default is one space)
+    SLstart = 0;
+    SLend   = 0;
+    singleSL = 0; // left shift a line "<" - needs a number of characters (default is one space)
     SLi      = 0;          // number of characters to shift left
     blockSL  = false;  // left shift a block of lines - needs a number of characters (default is one space)
 
     XXcnt   = 0;
-    singleX = false;  // exclude (hide) a line
+    XXstart = 0;
+    XXend   = 0;
+    singleX = 0;  // exclude (hide) a line
     blockXX = false;  // exclude (hide) a block of lines
 
 }
@@ -1420,8 +2073,10 @@ void CLEditFrame::InitIF()
     LogFile << "Init Input File " << std::endl;
 // this is the file that the user opened
     haveaFile = false;
+
     inputfile[0].IFlc = "";
     inputfile[0].IFCode = "";
+
     for (i = 1; i < 25000; i++)
     {
         inputfile[i] = inputfile[0];
@@ -1435,7 +2090,9 @@ void CLEditFrame::InitWIF()
 // the work file being processed - this is the impact of user input
 // data will go from file input & User Input = Work input
 // then back to file input
-    wfilecnt = 0;
+//  wfilecnt = 0;    // NO! do not set to zero!
+//  oldwfilecnt = 0;    // NO! do not set to zero!
+
     winputfile[0].wIFlc = "";
     winputfile[0].wIFCode = "";
     for (i = 1; i < 25000; i++)
@@ -1451,7 +2108,7 @@ void CLEditFrame::InitCC()
     singleC = false;  // Copy a line - need Before(s) or After(s)
     blockCC = false;  // Copy a block - need Before(s) or After(s) - can be used in a Create
 // a line being copied
-    haveaC = false;
+    haveaC = 0;
     cinputfile.cIFCode = "";
 // a block of lines to be copied
     haveaCC = false;
@@ -1468,7 +2125,7 @@ void CLEditFrame::InitMM()
     singleM = false;  // Move a line - need Before(s) or After(s)
     blockMM = false;  // Move a block of lines - need Before(s) or After(s)
 // a line to be moved
-    haveaM = false;
+    haveaM = 0;
     minputfile.mIFCode = "";
 // a block of lines to be moved
     haveaMM = false;
@@ -1486,7 +2143,7 @@ void CLEditFrame::InitOO()
     singleO = false;  // Overlay a line - needs single Move
     blockOO = false;  // Overlay a block of lines - needs a block Move
 // a line to be overlaid
-    haveaO = false;
+    haveaO = 0;
     oinputfile.oIFCode = "";
 // a block of lines to be overlaid
     haveaOO = false;
@@ -1504,7 +2161,7 @@ void CLEditFrame::InitRR()
     singleR = false;  // Repeat a line
     blockRR = false;  // Repeat a block of lines
 // a line to be Repeated
-    haveaR = false;
+    haveaR = 0;
     rinputfile.rIFCode = "";
 // a block of lines to be Repeated
     haveaRR = false;

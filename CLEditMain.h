@@ -40,6 +40,7 @@ class CLEditFrame : public wxFrame
         int         ypos;
         int         strpos;
         int         i;
+        int         l;
         int         posp1;
         int         Commandl;
         wxString    Commandstr;
@@ -94,6 +95,7 @@ class CLEditFrame : public wxFrame
 
 // the work file being processed
         int wfilecnt;
+        int oldwfilecnt;
         struct wInputFile
         {
             std::string wIFlc;   // line command action
@@ -103,7 +105,7 @@ class CLEditFrame : public wxFrame
 
 
 // a line to be Copied
-        bool haveaC;
+        int haveaC;
         struct cInputFile
         {
             std::string cIFCode; // the line of code
@@ -115,7 +117,7 @@ class CLEditFrame : public wxFrame
 
 
 // a line to be Moved
-        bool haveaM;
+        int haveaM;
         struct mInputFile
         {
             std::string mIFCode; // the line of code
@@ -127,7 +129,7 @@ class CLEditFrame : public wxFrame
 
 
 // a line to be Overlaid
-        bool haveaO;
+        int haveaO;
         struct oInputFile
         {
             std::string oIFCode; // the line of code
@@ -139,7 +141,7 @@ class CLEditFrame : public wxFrame
 
 
 // a line to be Repeated
-        bool haveaR;
+        int haveaR;
         struct rInputFile
         {
             std::string rIFCode; // the line of code
@@ -150,48 +152,67 @@ class CLEditFrame : public wxFrame
         rInputFile rrinputfile[2000]; // a reasonable block overlay would be what you can see on the current screen
 
 // line command trackers
-/*        bool singleA;  // single After
-        int  afters;   // multiple Afters
-        bool singleB;  // single Before
-        int  befores;  // multiple Before */
+//      bool singleA;  // single After
+        int  afters;   // single or multiple Afters
+//      bool singleB;  // single Before
+        int  befores;  // single or multiple Before
+        int  LCcnt;
+
         int  CCcnt;
-        bool singleC;  // Copy a line - need Before(s) or After(s)
+        int  CCstart;
+        int  CCend;
+        int  singleC;  // Copy a line - need Before(s) or After(s)
         bool blockCC;  // Copy a block - need Before(s) or After(s) - can be used in a Create
 
         int  DDcnt;
-        bool singleD;  // Delete a line
+        int  DDstart;
+        int  DDend;
+        int  singleD;  // Delete a line
         bool blockDD;  // Delete a block of lines
 
-        bool singleI;  // insert a single line - can have a count
+        int  singleI;  // insert a single line - can have a count
         int  Ii;       // number of lines to insert
 
         int  MMcnt;
-        bool singleM;  // Move a line - need Before(s) or After(s)
+        int  MMstart;
+        int  MMend;
+        int  singleM;  // Move a line - need Before(s) or After(s)
         bool blockMM;  // Move a block of lines - need Before(s) or After(s)
 
         int  OOcnt;
-        bool singleO;  // Overlay a line - needs single Move
+        int  OOstart;
+        int  OOend;
+        int  singleO;  // Overlay a line - needs single Move
         bool blockOO;  // Overlay a block of lines - needs a block Move
 
         int  RRcnt;
-        bool singleR;  // Repeat a line
+        int  RRstart;
+        int  RRend;
+        int  singleR;  // Repeat a line
         bool blockRR;  // Repeat a block of lines
 
         int  SRcnt;
-        bool singleSR; // right shift a line ">" - needs a number of characters (default is one space)
+        int  SRstart;
+        int  SRend;
+        int  singleSR; // right shift a line ">" - needs a number of characters (default is one space)
         int  SRi;      // number of characters to shift right
         bool blockSR;  // right shift a block of lines ">>" - needs a number of characters (default is one space)
 
         int  SLcnt;
-        bool singleSL; // left shift a line "<" - needs a number of characters (default is one space)
+        int  SLstart;
+        int  SLend;
+        int  singleSL; // left shift a line "<" - needs a number of characters (default is one space)
         int  SLi;      // number of characters to shift left
         bool blockSL;  // left shift a block of lines - needs a number of characters (default is one space)
 
         int  XXcnt;
-        bool singleX;  // exclude (hide) a line
+        int  XXstart;
+        int  XXend;
+        int  singleX;  // exclude (hide) a line
         bool blockXX;  // exclude (hide) a block of lines
 
         bool changesapplied;
+        bool badchanges;
 
 // Logic
 // basics
@@ -206,7 +227,7 @@ class CLEditFrame : public wxFrame
         void InitOO();
         void InitRR();
 
-// f-key actions and or command actions
+// f-key actions and or primary command actions
         void Find();
         void Bottom();
         void Home();
@@ -214,6 +235,11 @@ class CLEditFrame : public wxFrame
         void Down();
         void Help();
         void Change();
+        void Reset();
+        void WipeCommand();
+        void Create();
+        void SetEndl();
+        void GetEndl();
 
 // event handlers
         void OnKeyDown(wxKeyEvent & event);
@@ -232,20 +258,44 @@ class CLEditFrame : public wxFrame
         void ReadScreen();
         void WhatCommand();
         void ApplyChanges();
+        void LCReasonability();
+        void LookForLC();
+        void CaptureLC();
+
         void LookForCC();
+        void CaptureCC();
         void ApplyCC();
+
         void LookForDD();
+//      void CaptureDD(); - applied directly
         void ApplyDD();
+        void LineDelete();
+        void BlockDelete();
+
         void LookForMM();
+        void CaptureMM();
         void ApplyMM();
+
         void LookForOO();
+        void CaptureOO();
         void ApplyOO();
+
+        void LookForRR();
+        void CaptureRR();
+        void ApplyRR();
+
         void LookForSR();
+//      void CaptureSR(); - applied directly
         void ApplySR();
+
         void LookForSL();
+//      void CaptureSL(); - applied directly
         void ApplySL();
+
         void LookForXX();
+//      void CaptureXX(); - applied to view
         void ApplyXX();
+
         void LoopLine();
         void LoopCode();
         void LoadScreen();

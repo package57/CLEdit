@@ -1,10 +1,10 @@
 # depslib dependency file v1.0
-1730923403 source:/home/pierre/CLEdit/CLEditMain.cpp
+1731093422 source:/home/pierre/CLEdit/CLEditMain.cpp
 	<iostream>
 	<wx/wx.h>
 	"CLEditMain.h"
 
-1730923403 /home/pierre/CLEdit/CLEditMain.h
+1731092262 /home/pierre/CLEdit/CLEditMain.h
 	"CLEditCF.h"
 	"CLEditDB.h"
 	<wx/wx.h>
@@ -1647,7 +1647,7 @@
 	"CLEditApp.h"
 	"CLEditMain.h"
 
-1730751280 /home/pierre/CLEdit/include/CLEditCF.h
+1730996063 /home/pierre/CLEdit/include/CLEditCF.h
 	<stdio.h>
 	<iostream>
 	<fstream>
@@ -1656,7 +1656,7 @@
 	<ctime>
 	<ctype.h>
 
-1730810135 source:/home/pierre/CLEdit/src/CLEditCF.cpp
+1730996063 source:/home/pierre/CLEdit/src/CLEditCF.cpp
 	"CLEditCF.h"
 
 1730717480 source:/home/pierre/CLEdit/src/CLEditDB.cpp
