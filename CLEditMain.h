@@ -5,6 +5,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <string>
+#include <algorithm>
 using namespace std;
 class CLEditFrame : public wxFrame
 {
@@ -39,9 +41,16 @@ class CLEditFrame : public wxFrame
         char        Byte;
         int         ypos;
         int         strpos;
+        int         pos1;
+        int         pos2;
+        int         pos3;
+        int         pos4;
+        int         LeftPos;
+        int         RightPos;
+        std::string str;
         int         i;
+        int         wi;
         int         l;
-        int         posp1;
         int         Commandl;
         wxString    Commandstr;
         wxString    PrimaryCommand;
@@ -85,6 +94,7 @@ class CLEditFrame : public wxFrame
         std::string ReturnMessage;
 
 // the file being processed
+        bool FileSizeError;
         bool haveaFile;
         struct InputFile
         {
@@ -146,7 +156,6 @@ class CLEditFrame : public wxFrame
         {
             std::string rIFCode; // the line of code
         };
-        rInputFile rinputfile;
 // a block of lines to be Repeated
         bool haveaRR;
         rInputFile rrinputfile[2000]; // a reasonable block overlay would be what you can see on the current screen
@@ -161,6 +170,7 @@ class CLEditFrame : public wxFrame
         int  CCcnt;
         int  CCstart;
         int  CCend;
+        int  CCrows;
         int  singleC;  // Copy a line - need Before(s) or After(s)
         bool blockCC;  // Copy a block - need Before(s) or After(s) - can be used in a Create
 
@@ -176,18 +186,21 @@ class CLEditFrame : public wxFrame
         int  MMcnt;
         int  MMstart;
         int  MMend;
+        int  MMrows;
         int  singleM;  // Move a line - need Before(s) or After(s)
         bool blockMM;  // Move a block of lines - need Before(s) or After(s)
 
         int  OOcnt;
         int  OOstart;
         int  OOend;
+        int  OOrows;
         int  singleO;  // Overlay a line - needs single Move
         bool blockOO;  // Overlay a block of lines - needs a block Move
 
         int  RRcnt;
         int  RRstart;
         int  RRend;
+        int  RRrows;
         int  singleR;  // Repeat a line
         bool blockRR;  // Repeat a block of lines
 
@@ -197,6 +210,7 @@ class CLEditFrame : public wxFrame
         int  singleSR; // right shift a line ">" - needs a number of characters (default is one space)
         int  SRi;      // number of characters to shift right
         bool blockSR;  // right shift a block of lines ">>" - needs a number of characters (default is one space)
+        int  SRl;      // length of the string
 
         int  SLcnt;
         int  SLstart;
@@ -204,6 +218,7 @@ class CLEditFrame : public wxFrame
         int  singleSL; // left shift a line "<" - needs a number of characters (default is one space)
         int  SLi;      // number of characters to shift left
         bool blockSL;  // left shift a block of lines - needs a number of characters (default is one space)
+        int  SLl;      // length of the string
 
         int  XXcnt;
         int  XXstart;
@@ -213,7 +228,6 @@ class CLEditFrame : public wxFrame
 
         bool changesapplied;
         bool badchanges;
-
 // Logic
 // basics
         void Initialize();
@@ -256,15 +270,43 @@ class CLEditFrame : public wxFrame
 // process screen
         void ProcessScreen();
         void ReadScreen();
+
         void WhatCommand();
+        void WhatCommandA();
+        void WhatCommandB();
+        void WhatCommandCC();
+        void WhatCommandDD();
+        void WhatCommandMM();
+        void WhatCommandOO();
+        void WhatCommandRR();
+        void WhatCommandSR();
+        void WhatCommandSL();
+        void WhatCommandXX();
+
         void ApplyChanges();
+        void ApplyBlockCommands();
         void LCReasonability();
+        void LCReasonabilityBlock();
+        void LCReasonabilityBlockMM();
+        void LCReasonabilityLine();
+        void LCReasonabilityOverall();
         void LookForLC();
+        void LookForLCCC();
+        void LookForLCDD();
+        void LookForLCMM();
+        void LookForLCOO();
+        void LookForLCRR();
+        void LookForLCSR();
+        void LookForLCSL();
+        void LookForLCXX();
+
         void CaptureLC();
 
         void LookForCC();
         void CaptureCC();
         void ApplyCC();
+        void LineCopy();
+        void BlockCopy();
 
         void LookForDD();
 //      void CaptureDD(); - applied directly
@@ -283,21 +325,30 @@ class CLEditFrame : public wxFrame
         void LookForRR();
         void CaptureRR();
         void ApplyRR();
+        void LineRepeat();
+        void BlockRepeat();
 
         void LookForSR();
 //      void CaptureSR(); - applied directly
         void ApplySR();
+        void LineSR();
+        void BlockSR();
+        void ShiftRight();
 
         void LookForSL();
 //      void CaptureSL(); - applied directly
         void ApplySL();
+        void LineSL();
+        void BlockSL();
+        void ShiftLeft();
 
         void LookForXX();
 //      void CaptureXX(); - applied to view
         void ApplyXX();
 
-        void LoopLine();
-        void LoopCode();
+        void RefreshInput(); // from work to input
+        void CopyTheLine(); // the same 3 assignments used everywhere
+
         void LoadScreen();
         std::string ToString(int);  //annoying that you can assign a char array to a string but not a string to a char array - something about pointers and lvalues and rvalues - C++ is dumb
 
