@@ -227,7 +227,7 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
 //copy file
     if (PrimaryCommand == "copy")
     {
-        CopyFile();
+        CopyFile();  // from a to b or into after or before
         goto ExitOnApplyClicked;
     }
 //exclude  'x all'
@@ -350,6 +350,7 @@ void CLEditFrame::FindPrimary()
         }
         else
         {
+            Commandstr[i] = tolower(Commandstr[i]);
             PrimaryCommand += Commandstr[i];
         }
     }
@@ -784,7 +785,7 @@ void CLEditFrame::ToStage()
 
 
 
-
+//   do something here
 
 
 
@@ -868,6 +869,7 @@ void CLEditFrame::ProcessScreen()
 
     if (badchanges)
     {
+        InitCTrackers();
         return;
     }
 
@@ -922,6 +924,10 @@ void CLEditFrame::WhatCommand()
         LogFile << "WhatCommand " << std::endl;
     }
 
+// uppercase
+    UserLinestr[0] = toupper(UserLinestr[0]);
+    UserLinestr[1] = toupper(UserLinestr[1]);
+
 // look for line commands in the first position only
     if (UserLinestr[0] == 'A')
     {
@@ -973,10 +979,11 @@ void CLEditFrame::WhatCommand()
         WhatCommandXX(); return;
     }
 
-/*
-        int singleI;  // insert a single line - can have a count
-        int  Ii;       // number of lines to insert
-*/
+    if (UserLinestr[0] == 'I')
+    {
+        WhatCommandI(); return;
+    }
+
     Input[u].Linestr = UserLinestr;
 
 }
@@ -1200,7 +1207,15 @@ void CLEditFrame::WhatCommandXX()
     }
 
 }
+void CLEditFrame::WhatCommandI()
+{
 
+    LogFile << "WhatCommand I " << std::endl;
+
+    singleI++;
+    Input[u].Linestr = "I";
+
+}
 void CLEditFrame::ApplyChanges()
 {
 
@@ -1228,7 +1243,7 @@ void CLEditFrame::ApplyChanges()
     }
     else
     {
-        LCcnt = haveaC + haveaM + haveaO + haveaR;
+        LCcnt = singleC + singleM + singleO + singleR;  // these change the size of the file
         if (LCcnt != 0)
         {
             CaptureLC();  // blocks
@@ -1269,7 +1284,7 @@ void CLEditFrame::ApplyChanges()
 
 // are there any line commands to apply?
     LCcnt = CCcnt + DDcnt + MMcnt + OOcnt + RRcnt + SRcnt + SLcnt + XXcnt;
-    LCcnt = LCcnt + singleC + singleD + singleM + singleO + singleR + singleSR + singleSL + singleX;
+    LCcnt = LCcnt + singleC + singleD + singleM + singleO + singleR + singleSR + singleSL + singleX + singleI;
 
     if (LCcnt == 0)
     {
@@ -1302,19 +1317,27 @@ void CLEditFrame::ApplyBlockCommands()
         return;
     }
 
-// input file stays the same size
+// input file stays the same size - Move after or before
     if  (MMcnt == 2
     ||  singleM > 0)
     {
-        ApplyMM();
-        return;
+        if (OOcnt == 0
+        &&  singleO == 0)
+        {
+            ApplyMM();  // this is a simple Move
+            return;
+        }
     }
-// input file becomes smaller by the InptOO size
+// input file becomes smaller by the size of the Overlay
     if (OOcnt == 2
     ||  singleO > 0)
     {
-        ApplyOO();
-        return;
+        if  (MMcnt == 2
+        ||   singleM > 0)
+        {
+            ApplyOO();      // this is the Move/Overlay
+            return;
+        }
     }
 
 // makes input file bigger
@@ -1347,6 +1370,13 @@ void CLEditFrame::ApplyBlockCommands()
     ||  singleX > 0)
     {
         ApplyXX();
+        return;
+    }
+
+// make the file bigger
+    if (singleI > 0)
+    {
+        ApplyI();
         return;
     }
 
@@ -1385,9 +1415,17 @@ void CLEditFrame::LCReasonabilityBlock()
 
     LogFile << "LC Reasonability Block" << std::endl;
 
-    LCcnt = CCcnt + MMcnt + OOcnt + RRcnt;
+    LCcnt = CCcnt + DDcnt + MMcnt + RRcnt;
 
     if (LCcnt > 2)
+    {
+        wxLogStatus("Block command ambiguous ");
+        badchanges = true;
+        return;
+    }
+    LCcnt = MMcnt + OOcnt;
+
+    if (LCcnt > 4)
     {
         wxLogStatus("Block command ambiguous ");
         badchanges = true;
@@ -1419,12 +1457,6 @@ void CLEditFrame::LCReasonabilityBlock()
         }
     }
 
-//    if (blockCC)
-//       CCstart
-//          afters
-//          befores
-//       CCend
-
     if (blockMM
     &&  !blockOO)  // not an overlay
     {
@@ -1445,6 +1477,21 @@ void CLEditFrame::LCReasonabilityBlock()
         else
         {
             wxLogStatus("Block Overlay command can't use Before or After location(s)");
+            badchanges = true;
+            return;
+        }
+    }
+
+    if (blockMM
+    &&  blockOO)  // is an overlay
+    {
+        if (MMrows == OOrows)
+        {
+            badchanges = false;
+        }
+        else
+        {
+            wxLogStatus("Block Move/Overlay block sizes not the same");
             badchanges = true;
             return;
         }
@@ -1552,9 +1599,26 @@ void CLEditFrame::LCReasonabilityLine()
 
     LogFile << "LC Reasonability Line " << std::endl;
 
-    LCcnt = singleC + singleM + singleO; // + singleR;
+    LCcnt = singleC + singleD + singleM + singleR;
 
     if (LCcnt > 1)
+    {
+        wxLogStatus("line commands ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    if (LCcnt > 0
+    &&  singleI > 0)
+    {
+        wxLogStatus("line commands ambiguous ");
+        badchanges = true;
+        return;
+    }
+
+    LCcnt = singleM + singleO;
+
+    if (LCcnt > 2)
     {
         wxLogStatus("line commands ambiguous ");
         badchanges = true;
@@ -1702,7 +1766,7 @@ void CLEditFrame::LookForLC()
 
     LookForLCXX();
 
-    if (badchanges)   // in case any code is added beyond this point
+    if (badchanges)
     {
         return;
     }
@@ -2170,13 +2234,13 @@ void CLEditFrame::ApplyCC()
     wi = 0; // this is the index to the soon to be larger work file
     for (i = 0; i < oldwfilecnt; i++)
     {
-        if (singleC > 0) // this is the one and only one line to copy After(s) and Before(s) locations
+        if (singleC > 0) // this is the one and only one line to Copy to After(s) and Before(s) locations
         {
-            LineCopy();
+            LineCopy();  // this is a Line Copy
         }
-        else // this is a block delete
+        else
         {
-            BlockCopy();
+            BlockCopy();  // this is a Block Copy
         }
         if (wfilecnt > 23000)
         {
@@ -2185,7 +2249,7 @@ void CLEditFrame::ApplyCC()
         }
     }
 
-// refresh input with smaller work input
+// refresh input with larger work input
     RefreshInput();
 
     changesapplied = true;
@@ -2207,9 +2271,9 @@ void CLEditFrame::LineCopy()
 
     if (inputfile[i].IFlc == "A")
     {
-    // copy the current line as is
+        // copy the current line as is
         CopyTheLine();
-    // add the Copy line - after
+        // add the Copy Line - after
         winputfile[wi].wIFlc   = "000000";
         winputfile[wi].wIFCode = cinputfile.cIFCode;
         wfilecnt++;   // increase the file size
@@ -2219,17 +2283,17 @@ void CLEditFrame::LineCopy()
     {
         if (inputfile[i].IFlc == "B")
         {
-        // add the Copy line - before
+            // add the Copy Line - before
             winputfile[wi].wIFlc   = "000000";
             winputfile[wi].wIFCode = cinputfile.cIFCode;
             wfilecnt++; // increase the file size
             wi++;
-        // copy the current line as is
+            // copy the current line as is from input to work
             CopyTheLine();
         }
         else
         {
-        // just copy the line
+            // copy the current line as is from input to work
             CopyTheLine();
         }
     }
@@ -2240,9 +2304,9 @@ void CLEditFrame::BlockCopy()
 
     if (inputfile[i].IFlc == "A")
     {
-    // copy the current line as is
+        // copy the current line as is from input to work
         CopyTheLine();
-    // add the Block of Copy lines - after - in a loop
+        // add the Block of Copy lines - after - in a loop
         for (l = 0; l < CCrows; l++)
         {
             winputfile[wi].wIFlc   = "000000";
@@ -2255,7 +2319,7 @@ void CLEditFrame::BlockCopy()
     {
         if (inputfile[i].IFlc == "B")
         {
-        // add the Copy line - before - in a loop
+            // add the Block Copy - before - in a loop
             for (l = 0; l < CCrows; l++)
             {
                 winputfile[wi].wIFlc   = "000000";
@@ -2263,12 +2327,12 @@ void CLEditFrame::BlockCopy()
                 wfilecnt++; // increase the file size
                 wi++;
             }
-        // copy the current line as is
+            // copy the current line as is from input to work
             CopyTheLine();
         }
         else
         {
-        // just copy the line
+            // copy the current line as is from input to work
             CopyTheLine();
         }
     }
@@ -2319,6 +2383,7 @@ void CLEditFrame::LineDelete()
     }
     else
     {
+        // copy the current line as is from input to work
         CopyTheLine();
     }
 
@@ -2333,21 +2398,335 @@ void CLEditFrame::BlockDelete()
     }
     else
     {
-        winputfile[wi].wIFlc   = inputfile[i].IFlc;
-        winputfile[wi].wIFCode = inputfile[i].IFCode;
-        wi++;
+        // copy the current line as is from input to work
+        CopyTheLine();
     }
 
 }
 void CLEditFrame::ApplyMM()
 {
-
+// the file will be the same size
     LogFile << "Apply MM " << std::endl;
+
+    InitWIF();
+
+    oldwfilecnt = wfilecnt;
+    wi = 0; // this is the index to the work file
+    for (i = 0; i < oldwfilecnt; i++)
+    {
+        if (singleM > 0) // this is the one and only one line to Move to the After or Before location
+        {
+            LineMove();  // like a line copy
+        }
+        else // this is a Block Move
+        {
+            BlockMove();  // like a block copy
+        }
+    }
+// refresh input with work input
+    RefreshInput();
+
+    changesapplied = true;
+
+    if (singleM > 0) // this is the Line Move
+    {
+        wxLogStatus("Line Move applied ");
+    }
+    else // this is a Block Move
+    {
+        wxLogStatus("Block Move applied ");
+    }
+
+}
+void CLEditFrame::LineMove()
+{
+
+    if (inputfile[i].IFlc == "A")
+    {
+        // copy the current line as is from input to work
+        CopyTheLine();
+        // add the Move Line - after
+        winputfile[wi].wIFlc   = "000000";
+        winputfile[wi].wIFCode = minputfile.mIFCode;
+        wi++;
+    }
+    else
+    {
+        if (inputfile[i].IFlc == "B")
+        {
+            // add the Move Line - before
+            winputfile[wi].wIFlc   = "000000";
+            winputfile[wi].wIFCode = minputfile.mIFCode;
+            wi++;
+            // copy the current line as is from input to work
+            CopyTheLine();
+        }
+        else
+        {
+            if (inputfile[i].IFlc == "M")
+            {
+                return; // skip it
+            }
+            else
+            {
+                // copy the current line as is from input to work
+                CopyTheLine();
+            }
+        }
+    }
+
+}
+void CLEditFrame::BlockMove()
+{
+
+    if (inputfile[i].IFlc == "A")
+    {
+        // copy the current line as is from input to work
+        CopyTheLine();
+        // add the Move Block - after - in a loop
+        for (l = 0; l < MMrows; l++)
+        {
+            winputfile[wi].wIFlc   = "000000";
+            winputfile[wi].wIFCode = mminputfile[l].mIFCode;
+            wi++;
+        }
+    }
+    else
+    {
+        if (inputfile[i].IFlc == "B")
+        {
+            // add the Move Block - before - in a loop
+            for (l = 0; l < MMrows; l++)
+            {
+                winputfile[wi].wIFlc   = "000000";
+                winputfile[wi].wIFCode = mminputfile[l].mIFCode;
+                wi++;
+            }
+            // copy the current line as is from input to work
+            CopyTheLine();
+        }
+        else
+        {
+            if (i >= MMstart
+            &&  i <= MMend)
+            {
+                return;  //skip it
+            }
+            else
+            {
+                // copy the current line as is from input to work
+                CopyTheLine();
+            }
+        }
+    }
+
 }
 void CLEditFrame::ApplyOO()
 {
+// this will make the file smaller
 
     LogFile << "Apply OO " << std::endl;
+
+    if (singleO == 1)
+    {
+// move everything from the Move Line into the Overlay Line where ever there is a space
+        LineOver();
+    }
+    else
+    {
+// move everything from the Move block into the Overlay block where ever there is a space
+        BlockOver();
+    }
+
+    InitWIF();
+
+    oldwfilecnt = wfilecnt;
+    wi = 0; // this is the index to the new smaller work file
+    pos = 0; // this is the index to the Overlay Block
+    for (i = 0; i < oldwfilecnt; i++)
+    {
+        if (singleM > 0) // this is the one and only one line to Move
+        {
+            // push the Overlay Line into work input and pull the Move Line
+            LinePushOver();  // like a line copy
+        }
+        else // this is a Block Move
+        {
+            // push the Overlay block into work input and pull the Move Block
+            BlockPushOver();  // like a block copy
+        }
+    }
+
+// refresh input with smaller work input
+    RefreshInput();
+
+    changesapplied = true;
+
+    if (singleM > 0) // this is the Line Move
+    {
+        wxLogStatus("Line Move applied ");
+    }
+    else // this is a Block Move
+    {
+        wxLogStatus("Block Move applied ");
+    }
+
+}
+void CLEditFrame::LineOver()
+{
+// byte by byte where there is a blank
+
+    Mstrl = minputfile.mIFCode.length();
+
+    if (Mstrl == 0) // this means the Move Line is blank, do nothing to the Overlay line
+    {
+        return;
+    }
+
+    Ostrl = oinputfile.oIFCode.length();
+
+    if (Ostrl == 0) // this means the Overlay line is blank - clobber it
+    {
+        oinputfile.oIFCode = minputfile.mIFCode;
+        return;
+    }
+
+    if (Mstrl <= Ostrl)
+    {
+        for (pos = 0; pos < Mstrl; pos++)
+        {
+            if (oinputfile.oIFCode[pos] == ' ')     // overlay the blanks
+            {
+                oinputfile.oIFCode[pos] = minputfile.mIFCode[pos];
+            }
+        }
+        return;
+    }
+
+//Mstrl is bigger than Ostrl - get what you have
+    for (pos = 0; pos < Ostrl; pos++)
+    {
+        posp1 = pos + 1;
+        if (oinputfile.oIFCode[pos] == ' ')     // blank
+        {
+            oinputfile.oIFCode[pos] = minputfile.mIFCode[pos];
+        }
+    }
+
+//Mstrl is bigger than Ostrl - pad the rest
+    for (pos = posp1; pos < Mstrl; pos++)
+    {
+        oinputfile.oIFCode += minputfile.mIFCode[pos];
+    }
+
+}
+void CLEditFrame::BlockOver()
+{
+
+    for (l = 0; l < MMrows; l++)
+    {
+        BlockMoveOver();
+    }
+
+}
+void CLEditFrame::BlockMoveOver()
+{
+// byte by byte where there is a blank
+
+    Mstrl = mminputfile[l].mIFCode.length();
+
+    if (Mstrl == 0) // this means the Move Line is blank, do nothing to the Overlay line
+    {
+        return;
+    }
+
+    Ostrl = ooinputfile[l].oIFCode.length();
+
+    if (Ostrl == 0) // this means the Overlay line is blank - clobber it
+    {
+        ooinputfile[l].oIFCode = mminputfile[l].mIFCode;
+        return;
+    }
+
+    if (Mstrl <= Ostrl)
+    {
+        for (pos = 0; pos < Mstrl; pos++)
+        {
+            if (ooinputfile[l].oIFCode[pos] == ' ')     // overlay the blanks
+            {
+                ooinputfile[l].oIFCode[pos] = mminputfile[l].mIFCode[pos];
+            }
+        }
+        return;
+    }
+
+//Mstrl is bigger than Ostrl - get what you have
+    for (pos = 0; pos < Ostrl; pos++)
+    {
+        posp1 = pos + 1;
+        if (ooinputfile[l].oIFCode[pos] == ' ')     // blank
+        {
+            ooinputfile[l].oIFCode[pos] = mminputfile[l].mIFCode[pos];
+        }
+    }
+
+//Mstrl is bigger than Ostrl - pad the rest
+   for (pos = posp1; pos < Mstrl; pos++)
+    {
+        ooinputfile[l].oIFCode += mminputfile[l].mIFCode[pos];
+    }
+
+}
+void CLEditFrame::LinePushOver()
+{
+
+    if (inputfile[i].IFlc == "M")
+    {
+        // skip the record - decrease the file size
+        wfilecnt--;
+    }
+    else
+    {
+        if (inputfile[i].IFlc == "O")
+        {
+            winputfile[wi].wIFlc   = "000000";
+            winputfile[wi].wIFCode = oinputfile.oIFCode;
+            wi++;
+        }
+        else
+        {
+            // copy the current line as is from input to work
+            CopyTheLine();
+        }
+    }
+
+}
+void CLEditFrame::BlockPushOver()
+{
+
+    if (i >= MMstart
+    &&  i <= MMend)
+    {
+        // skip the record - decrease the file size
+        wfilecnt--;
+    }
+    else
+    {
+        if (i >= OOstart
+        &&  i <= OOend)
+        {
+            winputfile[wi].wIFlc   = "000000";
+            winputfile[wi].wIFCode = ooinputfile[pos].oIFCode;
+            pos++;
+            wi++;
+        }
+        else
+        {
+            // copy the current line as is from input to work
+            CopyTheLine();
+        }
+    }
+
 }
 void CLEditFrame::ApplyRR()
 {
@@ -2399,22 +2778,16 @@ void CLEditFrame::LineRepeat()
 
     if (inputfile[i].IFlc == "R")
     {
-    // copy the current line as is
-        winputfile[wi].wIFlc   = "000000";
-        winputfile[wi].wIFCode = inputfile[i].IFCode;
-        wi++;
-    // and repeat the line
-        winputfile[wi].wIFlc   = "000000";
-        winputfile[wi].wIFCode = inputfile[i].IFCode;
+        // copy the current line as is from input to work
+        CopyTheLine();
+        // and repeat the line
+        CopyTheLine();
         wfilecnt++;   // increase the file size
-        wi++;
     }
     else
     {
-    // just copy the line
-        winputfile[wi].wIFlc   = "000000";
-        winputfile[wi].wIFCode = inputfile[i].IFCode;
-        wi++;
+        // copy the current line as is from input to work
+        CopyTheLine();
      }
 
 }
@@ -2423,7 +2796,7 @@ void CLEditFrame::BlockRepeat()
 
     if (inputfile[i].IFlc == "RR")
     {
-    // copy the current line as is
+        // copy the current line as is from input to work
         CopyTheLine();
         if (i == RRend)
         // add the Block of Repeat lines - after the last RR - in a loop
@@ -2440,7 +2813,7 @@ void CLEditFrame::BlockRepeat()
     }
     else
     {
-    // just copy the line
+        // copy the current line as is from input to work
         CopyTheLine();
     }
 
@@ -2498,6 +2871,7 @@ void CLEditFrame::LineSR()
     }
     else
     {
+        // copy the current line as is from input to work
         CopyTheLine();
     }
 
@@ -2515,11 +2889,13 @@ void CLEditFrame::BlockSR()
         }
         else
         {
+            // copy the current line as is from input to work
             CopyTheLine();
         }
     }
     else
     {
+        // copy the current line as is from input to work
         CopyTheLine();
     }
 
@@ -2585,11 +2961,13 @@ void CLEditFrame::LineSL()
         }
         else
         {
+            // copy the current line as is from input to work
             CopyTheLine();
         }
     }
     else
     {
+        // copy the current line as is from input to work
         CopyTheLine();
     }
 
@@ -2607,11 +2985,13 @@ void CLEditFrame::BlockSL()
         }
         else
         {
+            // copy the current line as is from input to work
             CopyTheLine();
         }
     }
     else
     {
+        // copy the current line as is from input to work
         CopyTheLine();
     }
 
@@ -2633,6 +3013,55 @@ void CLEditFrame::ApplyXX()
 {
 
     LogFile << "Look for XX " << std::endl;
+
+}
+void CLEditFrame::ApplyI()
+{
+// increases the file size
+
+    LogFile << "Apply I " << std::endl;
+
+    InitWIF();
+
+    oldwfilecnt = wfilecnt;
+    wi = 0; // this is the index to the soon to be larger work file
+    for (i = 0; i < oldwfilecnt; i++)
+    {
+        LineInsert();
+        if (wfilecnt > 23000)
+        {
+            FileSizeError = true;
+            break;   // fatal
+        }
+    }
+
+// refresh input with larger work input
+    RefreshInput();
+
+    changesapplied = true;
+
+    wxLogStatus("Insert(s) applied ");
+
+}
+void CLEditFrame::LineInsert()
+{
+
+    if (inputfile[i].IFlc == "I")
+    {
+        // copy the current line as is from input to work
+        CopyTheLine();
+        // insert a blank line
+        winputfile[wi].wIFlc   = "000000";
+        winputfile[wi].wIFCode = "";
+        wi++;
+        wfilecnt++;   // increase the file size
+    }
+    else
+    {
+        // copy the current line as is from input to work
+        CopyTheLine();
+     }
+
 }
 void CLEditFrame::CopyTheLine()
 {
@@ -2666,10 +3095,9 @@ void CLEditFrame::Initialize()
     CurrentFile     = "";
     Byte            = ' ';
     strpos          = 0;
-    pos1            = 0;   // array index
-    pos2            = 1;
-    pos3            = 2;
-    pos4            = 3;
+    Mstrl           = 0;
+    Ostrl           = 0;
+    posp1           = 0;
     LeftPos         = 0;
     RightPos        = 0;
     str             = "";
@@ -2733,8 +3161,7 @@ void CLEditFrame::InitCTrackers()
     singleD = 0;        // Delete a line
     blockDD = false;    // Delete a block of lines
 
-    singleI = 0;        // insert a single line - can have a count
-    Ii = 0;             // number of lines to insert
+    singleI = 0;        // insert a single line
 
     MMcnt   = 0;
     MMstart = 0;
@@ -2778,6 +3205,8 @@ void CLEditFrame::InitCTrackers()
     XXend   = 0;
     singleX = 0;        // exclude (hide) a line
     blockXX = false;    // exclude (hide) a block of lines
+
+    singleI = 0;
 
 }
 void CLEditFrame::InitScreen()

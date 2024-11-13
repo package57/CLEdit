@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <ctype.h>
 using namespace std;
 class CLEditFrame : public wxFrame
 {
@@ -40,11 +41,11 @@ class CLEditFrame : public wxFrame
         std::string CurrentFile;
         char        Byte;
         int         ypos;
+        int         pos;
         int         strpos;
-        int         pos1;
-        int         pos2;
-        int         pos3;
-        int         pos4;
+        int         Mstrl;
+        int         Ostrl;
+        int         posp1;
         int         LeftPos;
         int         RightPos;
         std::string str;
@@ -52,6 +53,7 @@ class CLEditFrame : public wxFrame
         int         wi;
         int         l;
         int         Commandl;
+//
         wxString    Commandstr;
         wxString    PrimaryCommand;
         wxString    FirstParameter;
@@ -180,9 +182,6 @@ class CLEditFrame : public wxFrame
         int  singleD;  // Delete a line
         bool blockDD;  // Delete a block of lines
 
-        int  singleI;  // insert a single line - can have a count
-        int  Ii;       // number of lines to insert
-
         int  MMcnt;
         int  MMstart;
         int  MMend;
@@ -225,6 +224,9 @@ class CLEditFrame : public wxFrame
         int  XXend;
         int  singleX;  // exclude (hide) a line
         bool blockXX;  // exclude (hide) a block of lines
+
+        int  singleI;  // insert a blank line
+
 
         bool changesapplied;
         bool badchanges;
@@ -272,16 +274,17 @@ class CLEditFrame : public wxFrame
         void ReadScreen();
 
         void WhatCommand();
-        void WhatCommandA();
-        void WhatCommandB();
-        void WhatCommandCC();
-        void WhatCommandDD();
-        void WhatCommandMM();
-        void WhatCommandOO();
-        void WhatCommandRR();
-        void WhatCommandSR();
-        void WhatCommandSL();
-        void WhatCommandXX();
+        void WhatCommandA();    // after(s)
+        void WhatCommandB();    // before(s)
+        void WhatCommandCC();   // Copy a line or Block
+        void WhatCommandDD();   // Delete a line or Block
+        void WhatCommandMM();   // Move a line or Block
+        void WhatCommandOO();   // Overlay a line or Block
+        void WhatCommandRR();   // Repeat a line or Block
+        void WhatCommandSR();   // Right Shift a line of Block (like a TAB right)
+        void WhatCommandSL();   // Left Shift a line or Block (like TAB left)
+        void WhatCommandXX();   // Exclude a line or Block from view
+        void WhatCommandI();    // Insert a line
 
         void ApplyChanges();
         void ApplyBlockCommands();
@@ -301,50 +304,60 @@ class CLEditFrame : public wxFrame
         void LookForLCXX();
 
         void CaptureLC();
-
+// Copy
         void LookForCC();
         void CaptureCC();
         void ApplyCC();
         void LineCopy();
         void BlockCopy();
-
+// Delete
         void LookForDD();
 //      void CaptureDD(); - applied directly
         void ApplyDD();
         void LineDelete();
         void BlockDelete();
-
+// Move
         void LookForMM();
         void CaptureMM();
         void ApplyMM();
-
+        void LineMove();
+        void BlockMove();
+// Overlay
         void LookForOO();
         void CaptureOO();
         void ApplyOO();
-
+        void LineOver();
+        void BlockOver();
+        void BlockMoveOver();
+        void LinePushOver();
+        void BlockPushOver();
+// Repeat
         void LookForRR();
         void CaptureRR();
         void ApplyRR();
         void LineRepeat();
         void BlockRepeat();
-
+// Shift Right
         void LookForSR();
 //      void CaptureSR(); - applied directly
         void ApplySR();
         void LineSR();
         void BlockSR();
         void ShiftRight();
-
+// Shift Left
         void LookForSL();
 //      void CaptureSL(); - applied directly
         void ApplySL();
         void LineSL();
         void BlockSL();
         void ShiftLeft();
-
+// Exclude
         void LookForXX();
 //      void CaptureXX(); - applied to view
         void ApplyXX();
+// Insert
+        void ApplyI();
+        void LineInsert();
 
         void RefreshInput(); // from work to input
         void CopyTheLine(); // the same 3 assignments used everywhere
