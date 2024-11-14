@@ -242,6 +242,8 @@ class CLEditFrame : public wxFrame
         void InitMM();
         void InitOO();
         void InitRR();
+        void InitCF();
+        void InitDB();
 
 // f-key actions and or primary command actions
         void Find();
@@ -254,6 +256,8 @@ class CLEditFrame : public wxFrame
         void Reset();
         void WipeCommand();
         void Create();
+        void CreateFile();
+        void CreateTable();
         void SetEndl();
         void GetEndl();
 

@@ -1,5 +1,11 @@
-#include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <cstring>
+#include <ctime>
+#include <ctype.h>
+#include <sstream>
 
 #include "mysql.h"
 #include "mysql_driver.h"
@@ -10,10 +16,6 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
-//#include <cppconn/connection.h>
-//#include <cppconn/metadata.h>
-//#include <cppconn/resultset_metadata.h>
-//#include <cppconn/warning.h>
 using namespace std;
 class CLEditDB
 {
@@ -26,9 +28,17 @@ class CLEditDB
         int rowcnt = 0;
         int abendi;
         int u;
+        bool OnOne;
 
         std::string what = "";
         std::string state = "";
+
+        std::string DataBase;
+        std::string TableName;
+        std::string Query;
+        std::string CodeStr;
+        int         CodeId;
+       	stringstream sql;
 
         struct InputFile
         {
@@ -39,19 +49,28 @@ class CLEditDB
         sql::Driver * driver;
         sql::Connection * con;
         sql::Statement * stmt;
+        sql::PreparedStatement * pstmt;
         sql::ResultSet * res;
 
         void InitInputFile();
         void Driver();
         void Connect();
+        void Free();
         void Statement();
         int  Cursor();
-        void Process();
-        void Free();
-
+        void FromStage();
+        void ToStage();
+        void UseDb();
+        void DropTable();
+        void CreateTable();
+        void InsertRow();
         void Error();
 
     protected:
 
     private:
+
+        std::fstream LogFile;
+        std::fstream ErrFile;
+
 };

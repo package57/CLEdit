@@ -45,11 +45,11 @@ class CLEditCF
         char fileoc;
         int fileoi;
         int fileotellg;
-        char fileir[81];
+        char fileir[201];
 
         std::string mode;
         std::string str;
-        char arr[81];
+        char arr[201];
         char tick;
         char tack;
         int i;
