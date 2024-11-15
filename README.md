@@ -1,70 +1,101 @@
 CLEdit
 
-do you edit code? 
+To Repair: MySL miss handles single quotes in vaarchar
+To Build: Find
+To build : Replace
+To Build: Exclude
+
+Do you edit code? 
 
 CLEdit is a Command Line Editor based on IBM TSO edit and BIM (an extension) with additional features
 
 why?
-imagine if you would, the olden days. no keyboards, no screens, no mouse no GUI no nothing! 
-how did we code? we used 'punch cards' 
-what? 
-punch cards are sheets of heavy paper, brown, about 3 inch by 7. with one corner trimmed off, in variuous colors (handy)
-on the punch cards, there was a layout ptinted, rows and columns.
-there were 8 rows and 80 colums Hint - note 8 rows
-you the programmer would write your code in block letters on 'coding sheets', green a little bigger than a legal pad.
-then you would, if you were lucky enough, walk your sheets over to the 'key punch' pool - or find your own IBM 026 Card Punch
-a stack of punch cards would be loaded into the 026 and each line of code from the coding sheet produced a 'punched card'.
-the card would have small rectangular holes punched through it - that represented bytes - where ever there was a hole - that was a 1 , no hole meant 0 , zeros and ones, analog binary 
-now imagine, you have a stack of cards, one for each line of code! Don't drop them!
-well, if you were smart, you added sequence numbers, in the last 6 columns on the coding sheets
-if you were really cleaver, you'd number each line in a multiple of 5 - so that you could "insert" code using the sequence number as an index
-a physical index
-if you dropped your stack on the floor, you could places it into a card sorter and it would fix it for you - if you had sequence numbers
-otherwise you would have to manually restack your deck comparing to the code sheets, or re punch your sheets
-in school or at work these machines and services were valuable
-so now you have your stack, or multiple stacks, imagine one line of code is one card!
-when you were ready to run your program, you added some special cards in front of your stack (brown) - compile, link and run cards (red), followed by your data cards(green)!
-it is 'data' processing after all
-you loaded your stack into a card reader,  pressed F1 , R, Send on the keyboard and waited for someone to gather your 'listing' off the printer
-then you would head back to your desk to 'desk check' your output 
-no de bug, no watching, no nothing. everything with your eyes and your head and multiple eyes were essential 
-this is how programmers lived and data processing occured until about 1980.
-I started in 1982 and this is how it was done. Actually, I remember in college in the late 70's there was one CRT, the "main" console 
-there was always a collection of future Phd's surrounding it , ciggaretts hanging from their lips, deep in thought 
+Imagine if you would, the olden days prior to 1900.
+no PC
+no keyboards
+no screens
+no mouse
+no GUI
+no nothing!
 
-next up was the DEC writer!
-a dot matrix printer with a keyboard
-it would spit out a line and you would type a response
-back and forth over and over, like DOS or a Unix terminal without a 'screen' - no CRT's yet
-you would keep the box of fan fold paper and run it through on the reverse side to save paper
-it was your log of day to day exchanges between you and te computer
-also, a hugh break through - storage! 
-punch cards could be loaded into permanent storage on 'disk' and files could be on disk - or tapes!
+How did we code?
+We used 'punch cards' 
 
-eventually, if you were good, you got a screen, a crt. tiny, monochrome brown - not green yet! 
-forget about color or high resolution
+What?
+	Punch cards are sheets of heavy paper, brown, about 3 inch by 7. with one corner trimmed off, in variuous colors, very handy.
+On the punch cards, there was a layout printed, 8 rows and 80 columns.
+There were 8 rows and 80 colums Hint - note 8 rows.
 
-now that you had a screen you could log on to Time Sharing Option (TS0) a CUI 'desktop'
-from there you could manipulate settings and files - there were plenty of functions - always evolving amd improving
-yet at the end of the day it was a cui, no mouse, no copy / paste
+      You the programmer would write your code in block letters on 'coding sheets', green sheets of paper a little bigger than a legal pad.
+Then you would, if you were lucky enough, walk your sheets over to the 'key punch' pool - or find your own IBM 026 Card Punch, and punch out your cards youself.
+A stack of punch cards each card represnting a line of code. These would be loaded into the IBM 026 card puncher and each line of code from the coding sheet produced a 'punched card'.
+The card would have small rectangular holes punched through it - that represented bytes - where ever there was a hole - that was a 1 , no hole meant 0 , zeros and ones, analog binary.
 
-so what could you do? well, a lot actually. even more dare I say than you can today with the most advance IDE editors out there
-don't freak out, I love intellisense etc, but sometimes they get in the way
+    Now imagine, you have a stack of cards, one for each line of code! Don't drop them!
+Well, if you were smart, you added sequence numbers, in the last 6 columns on the coding sheets. You wrote the numbers down and tracked them youself. 
+If you were really cleaver, you'd number each line in a multiple of 5 or 10  - so that you could "insert" code using the sequence number as an index.
+A physical index.
 
-hence I wrote CLEdit, it will run anywhere, it uses C++, MySQL and wxWidgets for the GUI part
-and when I say GUI I mean that in the very simplest terms. 
-also CLEdit combined with all the other files in my GITHUB repository package57, is like a 'book',  or a reference of code - that is usefull, instructive, powerful and educational
-but most important of all - it works and it's understandable. At least I try to make it so.
-the repository is full of very usefull code sampes and examples with explainations
+  If you dropped your stack on the floor, you could places it into a card sorter and it would fix it for you - if you had sequence numbers.
+Otherwise you would have to manually restack your deck comparing to the code sheets, or re punch your sheets.
+In school or at work these machines and services were valuable.
 
+   So now you have your stack, or multiple stacks, imagine one line of code is one card! I've seen programs that used multiple boxes of cards, 2000 each, on trayed carts on wheels.
+Some of these progams represented several months of work. They were nearly priceless. see Sir George Williams affair 1969 Montreal Canada
+"As the police and the students fought in the halls, other students threw computer punch cards out of the windows, littering the streets above with thousands of punch cards ".
+Believe me, it was a pile to thick to drive through. Millions of hours of programming were lost.
 
-there are three big blocks to CLEdit - all in C++. I know. C++ is, what it is! 
+     When you were ready to run your program, you added some special cards in front of your stack (brown) - to compile, link and run (red), followed by your data cards(green)!
+It is 'data' processing after all, we're not dialing controls here or shooting at things. You loaded your stack into a card reader,  pressed F1 , R, Send on the keyboard
+and waited for someone to gather your 'listing' off the printer. Houston Automated Spool Protocol aka 'HASP'. Then you would head back to your desk to 'desk check' your output. 
+No de bug.
+No watching.
+No nothing.
+Everything with your eyes and your head and multiple eyes were essential. You could ask for a 'core dump' and get a stack of paper or hex output. Good Luck. 
+
+	   This is how programmers lived and data processing occured until about 1980. I started in 1982 and this is how it was done.0
+Actually, I remember in college in the late 70's there was only one CRT, the "main" console. There was always a collection of future Phd's surrounding it,
+ciggarets hanging from their lips, deep in thought, staring at the blinking cursor. 
+
+	  Next up was the DEC writer! A dot matrix printer with a keyboard. It would spit out a line and you would type in a response.
+Back and forth over and over, like DOS or a Unix terminal without a 'screen' - no CRT's yet. You would keep the box of fan fold paper and run it through on the reverse side to save paper.
+It was your log of day to day exchanges between you and the computer. The only proof you had of a proper result. 
+
+       	  The next hugh break through - storage! On disk anf tapes. Punch cards could be loaded into permanent storage on 'disk' and files could be on disk - or tapes!
+Eventually, if you were good, you got a screen, a crt. tiny, monochrome brown - not green yet! Forget about color or high resolution.
+
+	    Now that you had a screen you could log on to Time Sharing Option (TS0) a CUI 'desktop' create at IBM in Toronto. From there you could manipulate settings and files
+There were plenty of functions, always evolving amd improving yet at the end of the day it was a cui, no mouse, no copy / paste. 
+
+So what could you do?
+
+   	Well, a lot actually. even more dare I say than you can today with the most advance IDE editors out there. Don't freak out, I love intellisense etc, but sometimes they get in the way.
+Hundreds of millions of lines of code aform te backbone of modern buisness today. All created without a GUI. I'm reponsable for serval million myself. Sure I like Visual Studio etc uch as
+the next person, but, sometimes I find it annoying.
+
+    Hence I wrote CLEdit. It will run anywhere, it uses C++, MySQL and wxWidgets for the GUI part. And when I say GUI I mean that in the very simplest of terms. 
+Also CLEdit combined with all the other files in my GITHUB repository package57, is like a 'book',  or a reference of code - that is usefull, instructive, powerful and educational.
+But most important of all - it works and it's understandable. At least I try to make it so.
+The repository is full of very usefull code sampes and examples with explainations with real world applications. Like processing data.
+
+Fundamental Pricipals for programming is to master these three thoughts:
+	    Sequence - what needs to happen first, and so on  
+	    Condition - under what conditions  
+	    Iteration - looping, doing things again and again, over and over consistently and accurately
+The next most important thing to remember is: The very basic is that you program 'works'. How did it work? How long did it take to run? What resources were needed? What difficulties were encountered?
+What was accomplished? What went wrong? How do you fix that? You will quickly forget why you wrote what you wrote - so be as clear as possible with your code 'style', don't get fancy.
+The computer can handle millions of instructions. Modern compilers and pre compilers will 'fancy' up your logic for you - even if that wasn't your plan. see C++ CASE
+Remember Syntax is Syntax, but people are people and you brain can only handle so much pain. C++ will have you asking "what the hell does that mean" all day into tomorrow. C++ is dumb.
+The only thing about it that I like is it's 'typed' and supports structured programming techniques.  
+
+	 There are three big blocks to CLEdit - all in C++. I know. C++ is, what it is! 
 CLEdit is the GUI 
 CLEditCF provides file functions
 CLEdit provides database functions using MySQL 
 
-So....CLEdit is similar to the editor I used for 40 years, on big iron computers
-Note: the file size limit is 25,000 lines. the biggest single program I ever coded was 23,000 lines called HKOP0203. 
+       So....CLEdit is similar to the editor I used for 40 years, on big iron computers
+I've set the file size limit is 25,000 lines. The biggest single program I ever coded was 23,000 lines called HKOP0203.
+I have seen bigger, 95,000 lines! Imagine that in cards, almost 48 boxes. You'd need a van.  
   
 Key Board Commands 
 ENTER: Process Screen - process what you entered
@@ -108,10 +139,10 @@ O - overlay a line with the contents of a moved line - all the space in the over
 OO - pverlay a block of lie with the data from a corresoponding move block 
 R - repeat a line
 RR - repeat a block of lines 
-> - tab a line right
->> - tab a block of lines right 
-< - tab left
-<< - tab a block of lines left
+'>' - tab a line right
+'>>' - tab a block of lines right 
+'<' - tab left
+'<<' - tab a block of lines left
 X - exclude a line from view / impact
 XX - exclude a block of lines from view / impact
 I - insert a line

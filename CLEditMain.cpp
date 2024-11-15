@@ -120,7 +120,6 @@ void CLEditFrame::Bottom()
     }
     else
     {
-        frstl = 1;
 //      LoadScreen();   //always from work input
         wxLogStatus("Bottom end of file");
     }
@@ -522,8 +521,6 @@ void CLEditFrame::CreateFile()
         goto ExitCreateFile;
     }
 
-    frstl = 1;
-
     LoadScreen();   //always from work input
 
     wxLogStatus(PrimaryCommand + " " + FirstParameter + " applied");
@@ -561,8 +558,6 @@ void CLEditFrame::CreateTable()
     DB.ToStage();
 // "close" the database
     DB.Free();
-
-    frstl = 1;
 
     LoadScreen();   //always from work input
 
@@ -602,8 +597,6 @@ void CLEditFrame::SaveFile()
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " Save file Open error");
         goto ExitSaveFile;
     }
-
-    frstl = 1;
 
     LoadScreen();   //always from work input
 
@@ -645,8 +638,6 @@ void CLEditFrame::SaveAsFile()
         goto ExitSaveAsFile;
     }
 
-    frstl = 1;
-
     LoadScreen();   //always from work input
 
     wxLogStatus(PrimaryCommand + " " + FirstParameter + " applied");
@@ -679,8 +670,6 @@ void CLEditFrame::Reset()
         winputfile[i].wIFlc = "000000";
     }
 
-    frstl = 1;
-
     LoadScreen();
 
     wxLogStatus(PrimaryCommand + " applied");
@@ -703,6 +692,7 @@ void CLEditFrame::OpenFile()
 
     CurrentFile = FirstParameter;
     CF.fileiname = FirstParameter;
+// import the file
     CLEditCFrc = CF.openfile(CF.fileiname);
 
     if  (CLEditCFrc != 0)
@@ -711,8 +701,6 @@ void CLEditFrame::OpenFile()
         wfilecnt = 0;
         goto ExitOpenFile;
     }
-
-    haveaFile = true;
 
     InitIF();
 
@@ -724,15 +712,18 @@ void CLEditFrame::OpenFile()
     {
         FileSizeError = true;
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " file too big ");
-        haveaFile = false;
     }
     else
     {
+        haveaFile = true;
         for (i = 0; i < CF.fileireccnt; i++)
         {
+            inputfile[i].IFlc   = "000000";
             inputfile[i].IFCode   = CF.inputfile[i].IFCode;
+
             winputfile[i].wIFlc   = "000000";
             winputfile[i].wIFCode = CF.inputfile[i].IFCode;
+
             GetEndl();
         }
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " applied");
@@ -821,14 +812,12 @@ void CLEditFrame::FromStage()
     if  (FirstParameter == "")
     {
         wxLogStatus(PrimaryCommand + " need Database name ");
-        haveaFile = false;
         return;
     }
 
     if  (SecondParameter == "")
     {
         wxLogStatus(PrimaryCommand + " need TableName ");
-        haveaFile = false;
         return;
     }
 
@@ -897,14 +886,18 @@ void CLEditFrame::ToStage()
     if  (FirstParameter == "")
     {
         wxLogStatus(PrimaryCommand + " need Database name ");
-        haveaFile = false;
         return;
     }
 
     if  (SecondParameter == "")
     {
         wxLogStatus(PrimaryCommand + " need TableName ");
-        haveaFile = false;
+        return;
+    }
+
+    if (wfilecnt == 0)
+    {
+        wxLogStatus(PrimaryCommand + " no data to stage  ");
         return;
     }
 
@@ -923,7 +916,6 @@ void CLEditFrame::ToStage()
     {
         FileSizeError = true;
         wxLogStatus(PrimaryCommand + " file too big ");
-        haveaFile = false;
         return;
     }
 
@@ -941,8 +933,6 @@ void CLEditFrame::ToStage()
 
 // "close" the database
     DB.Free();
-
-    frstl = 1;
 
     LoadScreen();
 
@@ -970,13 +960,13 @@ void CLEditFrame::LoadScreen()
         if (winputfile[u].wIFlc == "000000")
         {
             prettystr = ToString(u);
-            CL[u].Line->ChangeValue(prettystr);
+            CL[i].Line->ChangeValue(prettystr);
         }
         else ///don't wipe the command on the line
         {
-            CL[u].Line->ChangeValue(winputfile[u].wIFlc);
+            CL[i].Line->ChangeValue(winputfile[u].wIFlc);
         }
-        CL[u].Code->ChangeValue(winputfile[u].wIFCode);
+        CL[i].Code->ChangeValue(winputfile[u].wIFCode);
         i++;
     }
 
@@ -1063,6 +1053,12 @@ void CLEditFrame::ReadScreen()
             wfilecnt = u;
             wfilecnt++;    // off by one eh
         }
+    }
+
+    if (!haveaFile)   // means we're starting from a blank screen not an open, from stage or copy after
+    {
+        haveaFile = true;
+        frstl = 1;
     }
 
 }
@@ -3425,19 +3421,14 @@ void CLEditFrame::InitUser()
     UserCodel = 0;
     UserCodestr = "";
 
-// frstl is the index to the file in process - it is where we start the display
-    frstl = 1;
-    lastl = 0;
-
 }
 void CLEditFrame::InitIF()
 {
 
     LogFile << "Init Input File " << std::endl;
 // this is the file that the user opened
-    haveaFile = false;
 
-    inputfile[0].IFlc = "";
+    inputfile[0].IFlc = "000000";
     inputfile[0].IFCode = "";
 
     for (i = 1; i < 25000; i++)
@@ -3456,7 +3447,7 @@ void CLEditFrame::InitWIF()
 //  wfilecnt = 0;    // NO! do not set to zero!
 //  oldwfilecnt = 0;    // NO! do not set to zero!
 
-    winputfile[0].wIFlc = "";
+    winputfile[0].wIFlc = "000000";
     winputfile[0].wIFCode = "";
     for (i = 1; i < 25000; i++)
     {

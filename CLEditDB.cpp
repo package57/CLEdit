@@ -2,22 +2,25 @@
 using namespace std;
 CLEditDB::CLEditDB()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Constructor";
-    std::cout << std::endl;
-}
 
+    LogFile.open("CLEditDBLogFile.txt", std::ios::out);
+    ErrFile.open("CLEditDBErrFile.txt", std::ios::out);
+
+    LogFile << "Constructor " << std::endl;
+
+    OnOne = true;
+
+}
 CLEditDB::~CLEditDB()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Destructor";
-    std::cout << std::endl;
+
+    LogFile << "Destructor " << std::endl;
+
 }
 void CLEditDB::Driver()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Driver";
-    std::cout << std::endl;
+
+    LogFile << "Driver " << std::endl;
 
     try
     {
@@ -34,13 +37,13 @@ void CLEditDB::Driver()
 }
 void CLEditDB::Connect()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Connect";
-    std::cout << std::endl;
+
+    LogFile << "Connect " << std::endl;
+
     try
     {
         con = driver->connect("localhost", "CLEdit", "CLEdit");    //host,user,pass
-        con->setSchema("mydb");
+        con->setSchema(DataBase);
     }
     catch (sql::SQLException &e)
     {
@@ -53,9 +56,9 @@ void CLEditDB::Connect()
 }
 void CLEditDB::Statement()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Statement";
-    std::cout << std::endl;
+
+    LogFile << "Statement " << std::endl;
+
     try
     {
         stmt = con->createStatement();
@@ -71,12 +74,18 @@ void CLEditDB::Statement()
 }
 int CLEditDB::Cursor()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Cursor count";
-    std::cout << std::endl;
+
+    LogFile << "Count(*) " << std::endl;
+
     try
     {
-        res = stmt->executeQuery("SELECT COUNT(*) AS total FROM mydb.CLEdit;");
+        Query = "";
+        Query += "SELECT COUNT(*) AS total FROM ";
+        Query += DataBase;
+        Query += ".";
+        Query += TableName;
+        Query += ";";
+        res = stmt->executeQuery(Query);
         if (res->next())
         {
             rowcnt = res->getInt("total");
@@ -94,12 +103,17 @@ int CLEditDB::Cursor()
         Error();
     }
 
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Cursor select";
-    std::cout << std::endl;
+    LogFile << "Cursor " << std::endl;
+
     try
     {
-        res = stmt->executeQuery("SELECT * FROM mydb.CLEdit;");
+        Query = "";
+        Query += "SELECT * FROM ";
+        Query += DataBase;
+        Query += ".";
+        Query += TableName;
+        Query += ";";
+        res = stmt->executeQuery(Query);
     }
     catch (sql::SQLException &e)
     {
@@ -110,9 +124,12 @@ int CLEditDB::Cursor()
     }
 
     return rowcnt;
+
 }
 void CLEditDB::InitInputFile()
 {
+
+    LogFile << "Init Input File " << std::endl;
 
     inputfile[0].IFCode = "";
 
@@ -122,13 +139,126 @@ void CLEditDB::InitInputFile()
     }
 
 }
-void CLEditDB::Process()
+void CLEditDB::ToStage()
 {
+
+    LogFile << "To Stage " << std::endl;
+
+    UseDb();
+
+    DropTable();
+
+    CreateTable();
+
+    CodeId = 0;
+    for (u = 0; u < rowcnt; u++)
+    {
+        InsertRow();
+    }
+
+}
+void CLEditDB::UseDb()
+{
+
+    LogFile << "UseDb " << std::endl;
+
+    try
+    {
+        Query = "";
+        Query += "USE ";
+        Query += DataBase;
+        Query += ";";
+        stmt->execute(Query);
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+    }
+
+}
+void CLEditDB::DropTable()
+{
+
+    LogFile << "Drop Table " << std::endl;
+
+    try
+    {
+        Query = "DROP TABLE IF EXISTS ";
+        Query += TableName;
+        Query += ";";
+        stmt->execute(Query);
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+    }
+
+}
+void CLEditDB::CreateTable()
+{
+
+    LogFile << "Create Table " << std::endl;
+
+    try
+    {
+        Query = "";
+        Query += "CREATE TABLE ";
+        Query += TableName;
+        Query += " (idCLEdit INT, CLEditcode VARCHAR(255));";
+        stmt->execute(Query);
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+    }
+
+}
+void CLEditDB::InsertRow()
+{
+
+    if (OnOne)
+    {
+        LogFile << "Insert Row " << std::endl;
+        OnOne = false;
+    }
+
+    CodeStr = inputfile[u].IFCode;
+    CodeId++;
+
+    try
+    {
+        sql.str("");
+        sql << "INSERT INTO ";
+        sql << TableName;
+        sql << "(idCLEdit, CLEditcode) VALUES (";
+        sql << CodeId << ", '" << CodeStr << "')";
+        stmt->execute(sql.str());
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+    }
+
+}
+void CLEditDB::FromStage()
+{
+
+    LogFile << "From Stage " << std::endl;
+
     InitInputFile();
 
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Process";
-    std::cout << std::endl;
     try
     {
         int i = 0;
@@ -153,14 +283,14 @@ void CLEditDB::Process()
 }
 void CLEditDB::Free()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Free";
-    std::cout << std::endl;
+
+    LogFile << "Free " << std::endl;
 
     try
     {
         delete con;
         delete stmt;
+        delete pstmt;
         delete res;
     }
     catch (sql::SQLException &e)
@@ -173,14 +303,17 @@ void CLEditDB::Free()
 }
 void CLEditDB::Error()
 {
-    std::cout << std::endl;
-    std::cout << "Running CLEditDB - Error " << errorcode;
-    std::cout << std::endl;
-    std::cout << "# ERR: SQLException in " << __FILE__;
-    std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
-    std::cout << "# ERR: " << what;
-    std::cout << " (MySQL error code: " << errorcode;
-    std::cout << ", SQLState: " << state << " )" << std::endl;
+
+    LogFile << "Error " << std::endl;
+
+    ErrFile << std::endl;
+    ErrFile << "CLEditDB - Error " << errorcode;
+    ErrFile << std::endl;
+    ErrFile << "# ERR: SQLException in " << __FILE__;
+    ErrFile << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
+    ErrFile << "# ERR: " << what;
+    ErrFile << " (MySQL error code: " << errorcode;
+    ErrFile << ", SQLState: " << state << " )" << std::endl;
 
     exit(abendi);
 
