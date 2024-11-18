@@ -96,7 +96,14 @@ void CLEditFrame::OnKeyDown(wxKeyEvent & event)
         case WXK_F6:
             LogFile << "F6 " << std::endl;
             ProcessScreen();
-            Change();
+            if  (changes)
+            {
+                Change();     // because things might have changed
+            }
+            else
+            {
+                ChangeNext();
+            }
             LoadScreen();
             break;
     }
@@ -152,7 +159,6 @@ void CLEditFrame::LookForFF()
             res = winputfile[i].wIFCode.find(FindStr);
             if (res != MinusOne)    // string was found
             {
-//              winputfile[i].wIFlc = "here  ";
                 FF[f].index = i;
                 FF[f].pos = res;
                 FindCnt++;
@@ -166,6 +172,10 @@ void CLEditFrame::FindNext()
 {
 
     LogFile << "Find Next" << std::endl;
+
+//default for no next
+    frstl = FF[0].index + 1;    //off by one eh
+    prevf = FF[0].index;
 
     for (f = 0; f < FindCnt; f++)
     {
@@ -182,28 +192,35 @@ void CLEditFrame::Bottom()
 {
     LogFile << "Bottom " << std::endl;
 
+    if (changes)
+    {
+        return;
+    }
+
     if (wfilecnt > 50)
     {
         lastl = wfilecnt / 50;
         lastl *= 50;
         lastl++;
         frstl = lastl;
-//      LoadScreen();   //always from work input
         wxLogStatus("Bottom end of file");
     }
     else
     {
-//      LoadScreen();   //always from work input
         wxLogStatus("Bottom end of file");
     }
+
 }
 void CLEditFrame::Home()
 {
     LogFile << "Home " << std::endl;
 
-    frstl = 1;
+    if (changes)
+    {
+        return;
+    }
 
-//  LoadScreen();   //always from work input
+    frstl = 1;
 
     wxLogStatus("Home applied");
 
@@ -212,15 +229,26 @@ void CLEditFrame::Up()
 {
     LogFile << "Up " << std::endl;
 
+    if (changes)
+    {
+        return;
+    }
+
     if (frstl == 1)
     {
         wxLogStatus("Up top of file");
     }
     else
     {
-        frstl -= 50;
-//      LoadScreen();   //always from work input
         wxLogStatus("Up applied");
+        if (frstl > 50)
+        {
+            frstl -= 50;
+        }
+        else
+        {
+            frstl = 1;
+        }
     }
 
 }
@@ -228,10 +256,14 @@ void CLEditFrame::Down()
 {
     LogFile << "Down " << std::endl;
 
-    if (wfilecnt > 50)
+    if (changes)
+    {
+        return;
+    }
+
+    if (wfilecnt > (frstl + 50))
     {
         frstl += 50;
-//      LoadScreen();   //always from work input
         wxLogStatus("Down applied");
     }
     else
@@ -245,18 +277,214 @@ void CLEditFrame::Help()
     LogFile << "Help " << std::endl;
 
     wxLogStatus("Help applied");
+
 }
 void CLEditFrame::Change()
 {
+
     LogFile << "Change " << std::endl;
 
+    if (FirstParameter == "")
+    {
+        wxLogStatus("Change from what?");
+        return;
+    }
 
-    wxLogStatus("Change applied");
+    if (SecondParameter == "")
+    {
+        wxLogStatus("Change to what?");
+        return;
+    }
+
+    ChangeFrom  = FirstParameter;
+    ChangeFroml = FirstParameter.length();
+    ChangeTo    = SecondParameter;
+    ChangeTol   = SecondParameter.length();
+
+// find line where change is requested
+    ChangeFind();
+
+    if (ChngCnt == 0)
+    {
+        wxLogStatus("Change applied " + FirstParameter + " not found");
+        return;
+    }
+
+// replace
+    if (ThirdParameter == "all")
+    {
+        ChangeAll();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + ThirdParameter + " applied");
+        frstl = TF[0].index + 1;     //off by one eh
+        prevtf = TF[0].index;        // for find next
+    }
+    else
+    {
+        ChangeNext();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + " next applied");
+    }
+
+}
+void CLEditFrame::ChangeFind()
+{
+
+    LogFile << "Change Find " << std::endl;
+
+//trim the ends off the file
+    for (i = (wfilecnt - 1); i > 1; i--)
+    {
+        TrimFile();
+    }
+
+    InitTF();
+
+    ChngCnt = 0;    // how many times is the string found
+
+    LookForTF();
+
+}
+void CLEditFrame::LookForTF()
+{
+
+    LogFile << "Look For TF " << std::endl;
+
+    tf = 0;  // index into change from found
+
+    for (i = 0; i < wfilecnt; i++)
+    {
+        if  (winputfile[i].wIFCode != "")
+        {
+            res = winputfile[i].wIFCode.find(FirstParameter);
+            if (res != MinusOne)    // string was found
+            {
+                TF[tf].index = i;
+                TF[tf].pos = res;
+                ChngCnt++;
+                tf++;
+            }
+        }
+    }
+
+}
+void CLEditFrame::ChangeNext()
+{
+
+    LogFile << "Change Next " << std::endl;
+
+    for (tf = 0; tf < ChngCnt; tf++)
+    {
+        if (TF[tf].index > prevtf)    // look for the index in the after the prior one
+        {
+            frstl  = TF[tf].index + 1;    //off by one eh
+            prevtf = TF[tf].index;
+        }
+    }
+
+    if  (tf == ChngCnt)
+    {
+        return;
+    }
+
+}
+void CLEditFrame::ChangeAll()
+{
+
+    LogFile << "Change All " << std::endl;
+
+    for (tf = 0; tf < ChngCnt; tf++)
+    {
+        i = TF[tf].index;   // this is where the line is
+        ChangeLineF  = winputfile[i].wIFCode;
+        ChangeLineFl = winputfile[i].wIFCode.length();
+        ChangeLineT  = "";
+        ChangeLineTl = 0;
+        f = TF[tf].pos;   // start replacing here
+        ChangeOver();
+    }
+
+    winputfile[i].wIFCode = ChangeLineT;
+
+}
+void CLEditFrame::ChangeOver()
+{
+
+    LogFile << "Change Over " << std::endl;
+
+// copy the bytes From To until f - the first byte for the change from string
+    for (l = 0; l < f; l++)
+    {
+        ChangeLineT += ChangeLineF[l];
+    }
+
+    if (ChangeTol <= ChangeFroml)
+    // the change To string will fit completely into the From string
+    {
+        ChangeOverShort();
+    }
+    else
+    //  if (ChangeTol > ChangeFroml the To string is bigger than From string - need to squeeze it into the line
+    {
+        ChangeOverLong();
+    }
+
+}
+void CLEditFrame::ChangeOverShort()
+{
+
+    LogFile << "Change Over Short";
+
+//  from this XXXXXXFFFFXXXXXX
+//    to this XXXXXXTTTTXXXXXX
+//  or
+//  from this XXXXXXFFFFFFXXXXXX
+//    to this XXXXXXTTTTXXXXXX
+
+// append the To string
+    for (l = 0; l < ChangeTol; l++)
+    {
+        ChangeLineT += ChangeTo[l];
+    }
+    posp1 = f + ChangeFroml;
+// append the rest for the From line
+    for (l = posp1; l < ChangeLineFl; l++)
+    {
+        ChangeLineT += ChangeLineF[l];
+    }
+
+}
+void CLEditFrame::ChangeOverLong()
+{
+
+    LogFile << "Change Over Long ";
+//  from this XXXXXXFFFXXXXXX
+//    to this XXXXXXTTTTTTXXXXXX
+
+//  append the first part of the To string
+    l = 0;
+    for (pos = f; pos < ChangeFroml; pos++)
+    {
+        ChangeLineT += ChangeTo[l];
+        l++;
+        posp1 = pos + 1;  // start location of byte after changed string
+    }
+
+// append the remaining part of the To string
+    for (l = l; l < ChangeTol; l++)
+    {
+        ChangeLineT += ChangeTo[l];
+    }
+
+// append the rest of the Line - append
+    for (l = posp1; l < ChangeLineFl; l++)
+    {
+        ChangeLineT += ChangeLineF[l];
+    }
+
 }
 void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
 {
 
-    LogFile << "On Apply Clicked " << std::endl;
+    LogFile << "On Apply Clicked ";
 
     Commandl = Command->GetLineLength(0);
     LogFile << "Length " << Commandl << std::endl;
@@ -287,12 +515,6 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
     if (PrimaryCommand == "create")
     {
         Create();
-        goto ExitOnApplyClicked;
-    }
-//change string tostring f6 all
-    if (PrimaryCommand == "change")
-    {
-        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + ThirdParameter + " applied");
         goto ExitOnApplyClicked;
     }
 //copy file
@@ -334,11 +556,15 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
         SaveAsFile();
         goto ExitOnApplyClicked;
     }
-//exit - clear the screen
-    if (PrimaryCommand == "exit")
+//exit - terminate the application!
+    if (PrimaryCommand == "exit"
+    ||  PrimaryCommand == "quit"
+    ||  PrimaryCommand == "bye"
+    ||  PrimaryCommand == "end"
+    ||  PrimaryCommand == "leave"
+    ||  PrimaryCommand == "stop")
     {
         Exit();
-        goto ExitOnApplyClicked;
     }
 //stage code from database
     if (PrimaryCommand == "fromstage")
@@ -354,37 +580,57 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
     }
     if (PrimaryCommand == "bottom")
     {
+        ProcessScreen();
         Bottom();
+        LoadScreen();
         goto ExitOnApplyClicked;
     }
 
     if (PrimaryCommand == "home")
     {
+        ProcessScreen();
         Home();
+        LoadScreen();
         goto ExitOnApplyClicked;
     }
 
     if (PrimaryCommand == "up")
     {
+        ProcessScreen();
         Up();
+        LoadScreen();
         goto ExitOnApplyClicked;
     }
 
     if (PrimaryCommand == "down")
     {
+        ProcessScreen();
         Down();
+        LoadScreen();
         goto ExitOnApplyClicked;
     }
 
     if (PrimaryCommand == "help")
     {
+        ProcessScreen();
         Help();
+        LoadScreen();
         goto ExitOnApplyClicked;
     }
 
     if (PrimaryCommand == "change")
     {
+        ProcessScreen();
         Change();
+        LoadScreen();
+        goto ExitOnApplyClicked;
+    }
+
+    if (PrimaryCommand == "reset")
+    {
+        ProcessScreen();
+        Reset();
+        LoadScreen();
         goto ExitOnApplyClicked;
     }
 
@@ -751,26 +997,29 @@ void CLEditFrame::Exit()
 {
     LogFile << "Exit " << std::endl;
 
-    Initialize();
-
-    wxLogStatus(PrimaryCommand + " applied");
-
-    WipeCommand();
+    wxExit();
 
 }
 
 void CLEditFrame::Reset()
 {
-    LogFile << "Exit " << std::endl;
-// clear all line commands- especially X & XX
 
-    for (i = 0; i < 25000; i++)
+    LogFile << "Reset " << std::endl;
+
+// clear all commands
+    InitCC();
+    InitMM();
+    InitOO();
+    InitRR();
+    InitFF();
+    InitTF();
+    InitCTrackers();
+
+    for (i = 0; i < wfilecnt; i++)
     {
         inputfile[i].IFlc   = "000000";
         winputfile[i].wIFlc = "000000";
     }
-
-    LoadScreen();
 
     wxLogStatus(PrimaryCommand + " applied");
 
@@ -1064,7 +1313,6 @@ void CLEditFrame::LoadScreen()
     for (u = (frstl - 1); i < 50; u++)
     {
         FocusLine();
-
         CL[i].Code->ChangeValue(winputfile[u].wIFCode);
         i++;
     }
@@ -3380,7 +3628,7 @@ void CLEditFrame::Initialize()
 // variables
     haveaFile = false;
     CurrentFile = "";       // the name of the file currently being edite
-    Byte        = ' ';      // do nothing - like a continue *here
+    Byte        = ' ';      // do nothing - like a continue
     ypos        = 0;        // Y position
     pos         = 0;        // search position
     strpos      = 0;        // start position
@@ -3391,7 +3639,7 @@ void CLEditFrame::Initialize()
     i           = 0;        // index into string
     wi          = 0;        // index into work string
     l           = 0;        // index other
-
+// find
     FindStr     = "";       // find string
     res         = 0;        // result of STD::STRING::FIND
     FindCnt     = 0;        // number of times string found
@@ -3399,6 +3647,20 @@ void CLEditFrame::Initialize()
     f           = 0;        // index into found string locations
     OnOne       = true;     // trigger for first time
     prevf       = 0;        // previously found string location
+
+//change
+    ChangeFrom  = "";       // change from string
+    ChangeFroml = 0;        // change from string length
+    ChangeLineT  = "";      // change line to string
+    ChangeLineTl = 0;       // change line to string length
+    ChangeLineF  = "";      // change line from string
+    ChangeLineFl = 0;       // change line from string length
+    ChngCnt     = 0;        // number of times change from string found
+    tf          = 0;        // index into change from found string locations
+    OnOnetf     = true;     // trigger for first time
+    prevtf      = 0;        // previously found string location
+    ChangeTo    = "";       // change to string
+    ChangeTol   = 0;        // change to string length
 
 // Command
     Commandl    = 0;        // the length of the command line string
@@ -3440,6 +3702,8 @@ void CLEditFrame::Initialize()
     InitCTrackers();
 // index to found strings - find
     InitFF();
+// index to found strings - change from
+    InitTF();
 
 }
 void CLEditFrame::InitCF()
@@ -3469,6 +3733,7 @@ void CLEditFrame::InitDB()
 }
 void CLEditFrame::InitFF()
 {
+
     LogFile << "Init FF " << std::endl;
 
     FF[0].index = 0;    // where in the winput is the string found - an index
@@ -3476,6 +3741,19 @@ void CLEditFrame::InitFF()
     for (f = 1; f < 25000; f++)
     {
         FF[f] = FF[0];
+    }
+
+}
+void CLEditFrame::InitTF()
+{
+
+    LogFile << "Init TF " << std::endl;
+
+    TF[0].index = 0;    // where in the winput is the string change from found - an index
+    TF[0].pos = 0;      // what position - an index
+    for (tf = 1; tf < 25000; tf++)
+    {
+        TF[tf] = TF[0];
     }
 
 }

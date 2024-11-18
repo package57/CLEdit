@@ -2241,7 +2241,7 @@
 1731499009 /home/pierre/CLEdit/CLEditApp.h
 	<wx/wx.h>
 
-1731862280 /home/pierre/CLEdit/CLEditMain.h
+1731943776 /home/pierre/CLEdit/CLEditMain.h
 	"CLEditCF.h"
 	"CLEditDB.h"
 	<wx/wx.h>
@@ -2329,7 +2329,7 @@
 
 1727177841 /home/pierre/MySql/mysql-9.1.0-linux-glibc2.28-x86_64/include/errmsg.h
 
-1731865966 source:/home/pierre/CLEdit/CLEditMain.cpp
+1731947714 source:/home/pierre/CLEdit/CLEditMain.cpp
 	<iostream>
 	<wx/wx.h>
 	"CLEditMain.h"

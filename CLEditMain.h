@@ -58,6 +58,19 @@ class CLEditFrame : public wxFrame
         int         f;              // index into found string locations
         bool        OnOne;          // trigger for first time
         int         prevf;          // previously found string location
+
+        std::string ChangeFrom;     // change from string
+        int         ChangeFroml;    // change from string length
+        std::string ChangeLineT;    // change line to string
+        int         ChangeLineTl;   // change line to string length
+        std::string ChangeLineF;    // change line from string
+        int         ChangeLineFl;   // change line from string length
+        int         ChngCnt;        // number of times change from string found
+        int         tf;             // index into change from found string locations
+        bool        OnOnetf;        // trigger for first time
+        int         prevtf;         // previously found string location
+        std::string ChangeTo;       // change to string
+        int         ChangeTol;      // change to string length
 //
         int         Commandl;           // the length of the command line string
         wxString    Commandstr;         // the command string
@@ -175,6 +188,14 @@ class CLEditFrame : public wxFrame
         };
         FindFile FF[25000];  // not at all likely
 
+// index to found strings - change from
+        struct ChngFile
+        {
+            int index;
+            int pos;
+        };
+        ChngFile TF[25000];  // not at all likely
+
 // line command trackers
 //      bool singleA;  // single After
         int  afters;   // single or multiple Afters
@@ -262,6 +283,7 @@ class CLEditFrame : public wxFrame
         void InitCF();
         void InitDB();
         void InitFF();
+        void InitTF();
 
 // f-key actions and or primary command actions
         void Find();
@@ -272,6 +294,12 @@ class CLEditFrame : public wxFrame
         void Down();
         void Help();
         void Change();
+        void ChangeFind();
+        void ChangeNext();
+        void ChangeAll();
+        void ChangeOver();
+        void ChangeOverShort();
+        void ChangeOverLong();
         void Reset();
         void WipeCommand();
         void Create();
@@ -328,6 +356,7 @@ class CLEditFrame : public wxFrame
         void LookForLCSL();
         void LookForLCXX();
         void LookForFF();
+        void LookForTF();
 
         void CaptureLC();
 // Copy
