@@ -2241,7 +2241,7 @@
 1731499009 /home/pierre/CLEdit/CLEditApp.h
 	<wx/wx.h>
 
-1731618006 /home/pierre/CLEdit/CLEditMain.h
+1731862280 /home/pierre/CLEdit/CLEditMain.h
 	"CLEditCF.h"
 	"CLEditDB.h"
 	<wx/wx.h>
@@ -2261,7 +2261,7 @@
 	<ctime>
 	<ctype.h>
 
-1731616091 /home/pierre/CLEdit/include/CLEditDB.h
+1731701851 /home/pierre/CLEdit/include/CLEditDB.h
 	<stdio.h>
 	<iostream>
 	<fstream>
@@ -2329,7 +2329,7 @@
 
 1727177841 /home/pierre/MySql/mysql-9.1.0-linux-glibc2.28-x86_64/include/errmsg.h
 
-1731692183 source:/home/pierre/CLEdit/CLEditMain.cpp
+1731865966 source:/home/pierre/CLEdit/CLEditMain.cpp
 	<iostream>
 	<wx/wx.h>
 	"CLEditMain.h"
@@ -2337,6 +2337,6 @@
 1730996063 source:/home/pierre/CLEdit/src/CLEditCF.cpp
 	"CLEditCF.h"
 
-1731691534 source:/home/pierre/CLEdit/src/CLEditDB.cpp
+1731702406 source:/home/pierre/CLEdit/src/CLEditDB.cpp
 	"CLEditDB.h"
 
