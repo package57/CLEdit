@@ -113,6 +113,7 @@ void CLEditFrame::OnKeyDown(wxKeyEvent & event)
 }
 void CLEditFrame::Find()
 {
+
     LogFile << "Find " << std::endl;
 
     if (FirstParameter == "")
@@ -122,6 +123,7 @@ void CLEditFrame::Find()
     }
 
 //trim the ends off the file
+    LogFile << "Trim File " << std::endl;
     for (i = (wfilecnt - 1); i > 1; i--)
     {
         TrimFile();
@@ -150,14 +152,15 @@ void CLEditFrame::Find()
 void CLEditFrame::LookForFF()
 {
 
-    f = 0;  // index into find found
+    LogFile << "Look For FF " << std::endl;
 
+    f = 0;  // index into find found
     for (i = 0; i < wfilecnt; i++)
     {
         if  (winputfile[i].wIFCode != "")
         {
-            res = winputfile[i].wIFCode.find(FindStr);
-            if (res != MinusOne)    // string was found
+            res = 0;
+            while ((res = winputfile[i].wIFCode.find(FirstParameter, res + 1)) != MinusOne)  // string::npos won't compile
             {
                 FF[f].index = i;
                 FF[f].pos = res;
@@ -190,6 +193,7 @@ void CLEditFrame::FindNext()
 }
 void CLEditFrame::Bottom()
 {
+
     LogFile << "Bottom " << std::endl;
 
     if (changes)
@@ -213,6 +217,7 @@ void CLEditFrame::Bottom()
 }
 void CLEditFrame::Home()
 {
+
     LogFile << "Home " << std::endl;
 
     if (changes)
@@ -227,6 +232,7 @@ void CLEditFrame::Home()
 }
 void CLEditFrame::Up()
 {
+
     LogFile << "Up " << std::endl;
 
     if (changes)
@@ -254,6 +260,7 @@ void CLEditFrame::Up()
 }
 void CLEditFrame::Down()
 {
+
     LogFile << "Down " << std::endl;
 
     if (changes)
@@ -274,6 +281,7 @@ void CLEditFrame::Down()
 }
 void CLEditFrame::Help()
 {
+
     LogFile << "Help " << std::endl;
 
     wxLogStatus("Help applied");
@@ -306,7 +314,7 @@ void CLEditFrame::Change()
 
     if (ChngCnt == 0)
     {
-        wxLogStatus("Change applied " + FirstParameter + " not found");
+        wxLogStatus(PrimaryCommand +  " " + FirstParameter + " not found");
         return;
     }
 
@@ -314,14 +322,13 @@ void CLEditFrame::Change()
     if (ThirdParameter == "all")
     {
         ChangeAll();
-        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + ThirdParameter + " applied");
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " applied " + std::to_string(ChngCnt) + " times");
         frstl = TF[0].index + 1;     //off by one eh
         prevtf = TF[0].index;        // for find next
     }
     else
     {
         ChangeNext();
-        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + " next applied");
     }
 
 }
@@ -331,6 +338,7 @@ void CLEditFrame::ChangeFind()
     LogFile << "Change Find " << std::endl;
 
 //trim the ends off the file
+    LogFile << "Trim File " << std::endl;
     for (i = (wfilecnt - 1); i > 1; i--)
     {
         TrimFile();
@@ -349,13 +357,12 @@ void CLEditFrame::LookForTF()
     LogFile << "Look For TF " << std::endl;
 
     tf = 0;  // index into change from found
-
     for (i = 0; i < wfilecnt; i++)
     {
         if  (winputfile[i].wIFCode != "")
         {
-            res = winputfile[i].wIFCode.find(FirstParameter);
-            if (res != MinusOne)    // string was found
+            res = 0;
+            while ((res = winputfile[i].wIFCode.find(FirstParameter, res + 1)) != MinusOne)  // string::npos won't compile
             {
                 TF[tf].index = i;
                 TF[tf].pos = res;
@@ -375,34 +382,47 @@ void CLEditFrame::ChangeNext()
     {
         if (TF[tf].index > prevtf)    // look for the index in the after the prior one
         {
-            frstl  = TF[tf].index + 1;    //off by one eh
+            ChangeIt();
+            wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + " next applied");
+            frstl = TF[tf].index + 1;    //off by one eh
             prevtf = TF[tf].index;
+            return;
         }
     }
 
-    if  (tf == ChngCnt)
-    {
-        return;
-    }
+    wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " " + " no more");
 
 }
 void CLEditFrame::ChangeAll()
 {
 
-    LogFile << "Change All " << std::endl;
+    LogFile << "Change All Loop" << std::endl;
 
     for (tf = 0; tf < ChngCnt; tf++)
     {
-        i = TF[tf].index;   // this is where the line is
-        ChangeLineF  = winputfile[i].wIFCode;
-        ChangeLineFl = winputfile[i].wIFCode.length();
-        ChangeLineT  = "";
-        ChangeLineTl = 0;
-        f = TF[tf].pos;   // start replacing here
-        ChangeOver();
+        ChangeIt();
     }
 
+}
+void CLEditFrame::ChangeIt()
+{
+
+    LogFile << "Change All " << std::endl;
+
+// this is where the line is
+    i = TF[tf].index;
+    ChangeLineF  = winputfile[i].wIFCode;
+    ChangeLineFl = winputfile[i].wIFCode.length();
+// new target line
+    ChangeLineT  = "";
+    ChangeLineTl = 0;
+// start replacing here
+    f = TF[tf].pos;
+
+    ChangeOver();
+//  changed line
     winputfile[i].wIFCode = ChangeLineT;
+    inputfile[i].IFCode   = ChangeLineT;
 
 }
 void CLEditFrame::ChangeOver()
@@ -634,6 +654,14 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
         goto ExitOnApplyClicked;
     }
 
+    if (PrimaryCommand == "sort")
+    {
+        ProcessScreen();
+        SortSM();
+        LoadScreen();
+        goto ExitOnApplyClicked;
+    }
+
 MainProcess:
 
     ProcessScreen();
@@ -651,6 +679,7 @@ ExitOnApplyClicked:
 }
 void CLEditFrame::FindPrimary()
 {
+
     LogFile << "Find Primary ";
 
     for (i = 0; i < Commandl; i++)
@@ -777,6 +806,8 @@ void CLEditFrame::FindThird()
 void CLEditFrame::OnTerminal()
 {
 
+    LogFile << "On Terminal " << std::endl;
+
     ErrFile << ReturnFunction << ReturnCode << ReturnMessage << std::endl;
 
 }
@@ -853,6 +884,7 @@ ExitCreateFile:
 }
 void CLEditFrame::CreateTable()
 {
+
     LogFile << "Create Table" << std::endl;   // need a block copy and file name
 
     InitDB();
@@ -889,6 +921,7 @@ void CLEditFrame::CreateTable()
 }
 void CLEditFrame::SaveFile()
 {
+
     LogFile << "Save File " << std::endl;
 
     if (CurrentFile == "")  // means the file is on the screen - wasn't opened first
@@ -905,6 +938,7 @@ void CLEditFrame::SaveFile()
     }
 
 //trim the ends off the file
+    LogFile << "Trim File " << std::endl;
     for (i = (wfilecnt - 1); i > 1; i--)
     {
         TrimFile();
@@ -937,6 +971,8 @@ ExitSaveFile:
 void CLEditFrame::TrimFile()
 {
 
+//    LogFile << "Trim File " << std::endl;
+
     if (winputfile[i].wIFCode == "")
     {
         wfilecnt--;
@@ -963,6 +999,7 @@ void CLEditFrame::SaveAsFile()
     }
 
 //trim the ends off the file
+    LogFile << "Trim File " << std::endl;
     for (i = (wfilecnt - 1); i > 1; i--)
     {
         TrimFile();
@@ -995,6 +1032,7 @@ ExitSaveAsFile:
 }
 void CLEditFrame::Exit()
 {
+
     LogFile << "Exit " << std::endl;
 
     wxExit();
@@ -1013,6 +1051,7 @@ void CLEditFrame::Reset()
     InitRR();
     InitFF();
     InitTF();
+    InitXX();
     InitCTrackers();
 
     for (i = 0; i < wfilecnt; i++)
@@ -1029,6 +1068,7 @@ void CLEditFrame::Reset()
 
 void CLEditFrame::OpenFile()
 {
+
     LogFile << "Open File " << std::endl;
 
     if (FirstParameter == "")
@@ -1090,17 +1130,22 @@ ExitOpenFile:
 void CLEditFrame::GetEndl()
 {
 
+    LogFile << "Get Endl " << std::endl;
+
     winputfile[i].wIFCode.erase(std::remove(winputfile[i].wIFCode.begin(), winputfile[i].wIFCode.end(), '\n'), winputfile[i].wIFCode.cend());
 
 }
 void CLEditFrame::SetEndl()
 {
 
+    LogFile << "Set Endl " << std::endl;
+
     winputfile[i].wIFCode += '\n';
 
 }
 void CLEditFrame::CopyFile()
 {
+
     LogFile << "Copy File " << std::endl;
 
     InitScreen();
@@ -1139,6 +1184,8 @@ ExitCopyFile:
 void CLEditFrame::CLEditCFmsg()
 {
 
+    LogFile << "CF msg " << std::endl;
+
     switch (CLEditCFrc)
     {
         case 3500:
@@ -1154,7 +1201,7 @@ void CLEditFrame::FromStage()
 {
 // get the file from a table :)
 
-    LogFile << "from stage " << std::endl;
+    LogFile << "From Stage " << std::endl;
 
     InitScreen();
 
@@ -1271,6 +1318,7 @@ void CLEditFrame::ToStage()
     InitDB();
 
 //trim the ends off the file
+    LogFile << "Trim File " << std::endl;
     for (i = (wfilecnt - 1); i > 1; i--)
     {
         TrimFile();
@@ -1296,8 +1344,86 @@ void CLEditFrame::ToStage()
     WipeCommand();
 
 }
+void CLEditFrame::SortSM()
+{
+
+    LogFile << "Sort " << std::endl;
+
+//trim the ends off the file
+    LogFile << "Trim File " << std::endl;
+    for (i = (wfilecnt - 1); i > 1; i--)
+    {
+        TrimFile();
+    }
+
+    for (i = 0; i < wfilecnt; i++)
+    {
+        SM.inputfile[i].IFCode = winputfile[i].wIFCode;
+    }
+
+    SM.rowcnt = wfilecnt;
+    SM.SortSM();
+
+    for (i = 0; i < wfilecnt; i++)
+    {
+        inputfile[i].IFlc   = "000000";
+        inputfile[i].IFCode   = SM.inputfile[i].IFCode;
+        winputfile[i].wIFlc   = "000000";
+        winputfile[i].wIFCode = SM.inputfile[i].IFCode;
+    }
+
+// binary search - for kicks
+    left = 0;
+    right = wfilecnt - 1;
+    mid = 0;
+    key = "Pierre";
+    res = BiSearch();
+
+    if (res == -1)
+    {
+        LogFile << "Binary Search - Pierre not found " << std::endl;
+    }
+    else
+    {
+        LogFile << "Binary Search - Pierre found here " + std::to_string(mid) << std::endl;
+    }
+
+    frstl = 1;
+
+    LoadScreen();   //always from work input
+
+    wxLogStatus(PrimaryCommand + " applied");
+
+    WipeCommand();
+
+}
+int CLEditFrame::BiSearch()
+{
+
+    while (left <= right)
+    {
+        mid = left + (right - left) / 2;
+        if (winputfile[mid].wIFCode == key)
+        {
+            return mid;
+        }
+        if (winputfile[mid].wIFCode < key)
+        {
+            left = mid + 1;
+        }
+        else
+        {
+            right = mid - 1;
+        }
+    }
+
+    return -1;
+
+}
 void CLEditFrame::WipeCommand()
 {
+
+    LogFile << "Wipe Command " << std::endl;
 
     PrimaryCommand = "";
     FirstParameter = "";
@@ -1307,9 +1433,11 @@ void CLEditFrame::WipeCommand()
 }
 void CLEditFrame::LoadScreen()
 {
+
     LogFile << "Load Screen " << std::endl;
 
     i = 0;
+    LogFile << "Focus Line " << std::endl;
     for (u = (frstl - 1); i < 50; u++)
     {
         FocusLine();
@@ -1320,6 +1448,8 @@ void CLEditFrame::LoadScreen()
 }
 void CLEditFrame::FocusLine()
 {
+
+//  LogFile << "Focus Line " << std::endl;
 
     if (winputfile[u].wIFlc == "000000")
     {
@@ -1333,6 +1463,8 @@ void CLEditFrame::FocusLine()
 }
 std::string CLEditFrame::ToString(int u)
 {
+
+//  LogFile << "To String " << std::endl;
 // make 10 look like 000010 etc
 
     ostringstream os;
@@ -1346,15 +1478,18 @@ std::string CLEditFrame::ToString(int u)
 }
 void CLEditFrame::ProcessScreen()
 {
+
+    LogFile << "Process Screen " << std::endl;
 // capture everything from the screen
 // capture all code where ever the block command causes the file size to change: c/CC d/DD m/MM o/OO r/RR
     ReadScreen();
 
-// did anything change on the screen - if not, skip the Finr() on a find next F5
+// did anything change on the screen - if not, skip the Find() on a find next F5
     LookForChanges();
 
 // move all the user Input into Work Input
 // the index from the screen "u" to Work Input is "frstl"
+// excluded lines need to offset that key
     i = frstl - 1;
     for (u = 0; u < 50; u++)
     {
@@ -1391,13 +1526,16 @@ void CLEditFrame::ProcessScreen()
         wxLogStatus("applied");
     }
 
-// XX
-// X
 }
 void CLEditFrame::LookForChanges()
 {
 
+    LogFile << "Look For Changes " << std::endl;
+
     changes = false;
+
+// the index from the screen "u" to Work Input is "frstl"
+// excluded lines need to offset that key
 
     i = frstl - 1;
     for (u = 0; u < 50; u++)
@@ -1423,6 +1561,7 @@ void CLEditFrame::ReadScreen()
     InitUser();
 // capture everything from the text controls - Line Commands and Code
 
+    LogFile << "What Command " << std::endl;
     for (u = 0; u < 50; u++)
     {
         UserLinel   = CL[u].Line->GetLineLength(0);
@@ -1449,6 +1588,8 @@ void CLEditFrame::ReadScreen()
 }
 void CLEditFrame::WhatCommand()
 {
+
+//    LogFile << "What Command " << std::endl;
 
     if (u == 0)
     {
@@ -1521,7 +1662,7 @@ void CLEditFrame::WhatCommand()
 void CLEditFrame::WhatCommandA()
 {
 
-    LogFile << "WhatCommand A " << std::endl;
+    LogFile << "What Command A " << std::endl;
 
     Input[u].Linestr = "A";
 
@@ -1531,7 +1672,7 @@ void CLEditFrame::WhatCommandA()
 void CLEditFrame::WhatCommandB()
 {
 
-    LogFile << "WhatCommand B " << std::endl;
+    LogFile << "What Command B " << std::endl;
 
     Input[u].Linestr = "B";
 
@@ -1541,7 +1682,7 @@ void CLEditFrame::WhatCommandB()
 void CLEditFrame::WhatCommandCC()
 {
 
-    LogFile << "WhatCommand CC " << std::endl;
+    LogFile << "What Command CC " << std::endl;
 
     if  (UserLinel > 1)
     {
@@ -1566,7 +1707,7 @@ void CLEditFrame::WhatCommandCC()
 void CLEditFrame::WhatCommandDD()
 {
 
-    LogFile << "WhatCommand DD " << std::endl;
+    LogFile << "What Command DD " << std::endl;
 
     if  (UserLinel > 1)
     {
@@ -1590,7 +1731,7 @@ void CLEditFrame::WhatCommandDD()
 void CLEditFrame::WhatCommandMM()
 {
 
-    LogFile << "WhatCommand MM " << std::endl;
+    LogFile << "What Command MM " << std::endl;
 
     if  (UserLinel > 1)
     {
@@ -1615,7 +1756,7 @@ void CLEditFrame::WhatCommandMM()
 void CLEditFrame::WhatCommandOO()
 {
 
-    LogFile << "WhatCommand OO " << std::endl;
+    LogFile << "What Command OO " << std::endl;
 
     if  (UserLinel > 1)
     {
@@ -1640,7 +1781,7 @@ void CLEditFrame::WhatCommandOO()
 void CLEditFrame::WhatCommandRR()
 {
 
-    LogFile << "WhatCommand RR " << std::endl;
+    LogFile << "What Command RR " << std::endl;
 
     if  (UserLinel > 1)
     {
@@ -1665,7 +1806,7 @@ void CLEditFrame::WhatCommandRR()
 void CLEditFrame::WhatCommandSR()
 {
 
-    LogFile << "WhatCommand >> " << std::endl;
+    LogFile << "What Command >> " << std::endl;
 
 //        int  SRi;      // number of characters to shift right
 
@@ -1691,7 +1832,7 @@ void CLEditFrame::WhatCommandSR()
 void CLEditFrame::WhatCommandSL()
 {
 
-    LogFile << "WhatCommand << " << std::endl;
+    LogFile << "What Command << " << std::endl;
 
 //   int  SLi;      // number of characters to shift left
 
@@ -1717,7 +1858,7 @@ void CLEditFrame::WhatCommandSL()
 void CLEditFrame::WhatCommandXX()
 {
 
-    LogFile << "WhatCommand XX " << std::endl;
+    LogFile << "What Command XX " << std::endl;
 
     if  (UserLinel > 1)
     {
@@ -1741,7 +1882,7 @@ void CLEditFrame::WhatCommandXX()
 void CLEditFrame::WhatCommandI()
 {
 
-    LogFile << "WhatCommand I " << std::endl;
+    LogFile << "What Command I " << std::endl;
 
     singleI++;
     Input[u].Linestr = "I";
@@ -1750,7 +1891,7 @@ void CLEditFrame::WhatCommandI()
 void CLEditFrame::ApplyChanges()
 {
 
-    LogFile << "ApplyChanges " << std::endl;
+    LogFile << "Apply Changes " << std::endl;
 
     LookForLC();
 
@@ -1766,6 +1907,48 @@ void CLEditFrame::ApplyChanges()
         return;
     }
 
+//  are there any block commands
+//  are there any line commands
+    Capture();
+
+// ranges
+    Ranges();
+
+    if (badchanges)
+    {
+        return;
+    }    
+
+// at the very lease - copy work to input - as is - without command line changes applied - yet
+    for (i = 0; i < wfilecnt; i++)
+    {
+        inputfile[i].IFlc   = winputfile[i].wIFlc;
+        inputfile[i].IFCode = winputfile[i].wIFCode;
+    }
+
+// are there any line commands to apply?
+    LCcnt = CCcnt + DDcnt + MMcnt + OOcnt + RRcnt + SRcnt + SLcnt + XXcnt;
+    LCcnt = LCcnt + singleC + singleD + singleM + singleO + singleR + singleSR + singleSL + singleX + singleI;
+
+    if (LCcnt == 0)
+    {
+        changesapplied = false;
+        return;
+    }
+    else
+    {
+        changes = true;
+    }
+
+    ApplyCommands();
+
+}
+void CLEditFrame::Capture()
+{
+
+    LogFile << "Capture " << std::endl;
+
+//  are there any block commands
     LCcnt = CCcnt + MMcnt + OOcnt + RRcnt;
 
     if (LCcnt != 0)
@@ -1774,6 +1957,7 @@ void CLEditFrame::ApplyChanges()
     }
     else
     {
+//  are there any line commands
         LCcnt = singleC + singleM + singleO + singleR;  // these change the size of the file
         if (LCcnt != 0)
         {
@@ -1781,7 +1965,12 @@ void CLEditFrame::ApplyChanges()
         }
     }
 
-// ranges
+}
+void CLEditFrame::Ranges()
+{
+ 
+    LogFile << "Ranges " << std::endl;
+
     if (blockMM
     &&  blockOO)
     {
@@ -1805,35 +1994,12 @@ void CLEditFrame::ApplyChanges()
             }
         }
     }
-
-// at the very lease - copy work to input - as is - without command line changes applied - yet
-    for (i = 0; i < wfilecnt; i++)
-    {
-        inputfile[i].IFlc   = winputfile[i].wIFlc;
-        inputfile[i].IFCode = winputfile[i].wIFCode;
-    }
-
-// are there any line commands to apply?
-    LCcnt = CCcnt + DDcnt + MMcnt + OOcnt + RRcnt + SRcnt + SLcnt + XXcnt;
-    LCcnt = LCcnt + singleC + singleD + singleM + singleO + singleR + singleSR + singleSL + singleX + singleI;
-
-    if (LCcnt == 0)
-    {
-        changesapplied = false;
-        return;
-    }
-    else
-    {
-        changes = true;
-    }
-
-    ApplyBlockCommands();
-
+    
 }
-void CLEditFrame::ApplyBlockCommands()
+void CLEditFrame::ApplyCommands()
 {
 
-    LogFile << "ApplyBlockCommands " << std::endl;
+    LogFile << "Apply Commands " << std::endl;
 
 // insert the lines to be copied where ever there is an After or a Before
 // makes input file bigger
@@ -1919,7 +2085,7 @@ void CLEditFrame::ApplyBlockCommands()
 void CLEditFrame::LCReasonability()
 {
 
-    LogFile << "LCReasonability " << std::endl;
+    LogFile << "LC Reasonability " << std::endl;
 // multiple blocks and or multiple types os blocks are ambiguous
 // especially ones that cause file size changes
 
@@ -2091,6 +2257,8 @@ void CLEditFrame::LCReasonabilityBlock()
 }
 void CLEditFrame::LCReasonabilityBlockMM()
 {
+
+    LogFile << "LC Reasonability Block MM " << std::endl;
 
     if (afters == 0
     &&  befores == 0)
@@ -2310,10 +2478,11 @@ void CLEditFrame::LookForLC()
 void CLEditFrame::LookForLCCC()
 {
 
-    LogFile << "Look for CC " << std::endl;
+    LogFile << "Look for LC CC " << std::endl;
 
     CCcnt = 0;
     CCstart = 9999;
+    LogFile << "Look For CC " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForCC();
@@ -2337,9 +2506,11 @@ void CLEditFrame::LookForLCCC()
 void CLEditFrame::LookForLCDD()
 {
 
-    LogFile << "Look for DD " << std::endl;
+    LogFile << "Look for LC DD " << std::endl;
+
     DDcnt = 0;
     DDstart = 9999;
+    LogFile << "Look for DD " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForDD();
@@ -2363,10 +2534,11 @@ void CLEditFrame::LookForLCDD()
 void CLEditFrame::LookForLCMM()
 {
 
-    LogFile << "Look for MM " << std::endl;
+    LogFile << "Look for LC MM " << std::endl;
 
     MMcnt = 0;
     MMstart = 9999;
+    LogFile << "Look for MM " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForMM();
@@ -2390,10 +2562,11 @@ void CLEditFrame::LookForLCMM()
 void CLEditFrame::LookForLCOO()
 {
 
-    LogFile << "Look for OO " << std::endl;
+    LogFile << "Look for LC OO " << std::endl;
 
     OOcnt = 0;
     OOstart = 9999;
+    LogFile << "Look for OO " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForOO();
@@ -2416,10 +2589,11 @@ void CLEditFrame::LookForLCOO()
 void CLEditFrame::LookForLCRR()
 {
 
-    LogFile << "Look for RR " << std::endl;
+    LogFile << "Look for LC RR " << std::endl;
 
     RRcnt = 0;
     RRstart = 9999;
+    LogFile << "Look for RR " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForRR();
@@ -2442,10 +2616,11 @@ void CLEditFrame::LookForLCRR()
 }
 void CLEditFrame::LookForLCSR()
 {
-    LogFile << "Look for >> " << std::endl;
+    LogFile << "Look for LC SR >> " << std::endl;
 
     SRcnt = 0;
     SRstart = 9999;
+    LogFile << "Look for >> " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForSR();
@@ -2469,10 +2644,11 @@ void CLEditFrame::LookForLCSR()
 void CLEditFrame::LookForLCSL()
 {
 
-    LogFile << "Look for << " << std::endl;
+    LogFile << "Look for LC SL << " << std::endl;
 
     SLcnt = 0;
     SLstart = 9999;
+    LogFile << "Look for << " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForSL();
@@ -2496,10 +2672,11 @@ void CLEditFrame::LookForLCSL()
 void CLEditFrame::LookForLCXX()
 {
 
-    LogFile << "Look for XX " << std::endl;
+    LogFile << "Look for LC XX " << std::endl;
 
     XXcnt = 0;
     XXstart = 9999;
+    LogFile << "Look for XX " << std::endl;
     for (i = 0; i < wfilecnt; i++)
     {
         LookForXX();
@@ -2549,7 +2726,7 @@ void CLEditFrame::CaptureLC()
 void CLEditFrame::LookForCC()
 {
 
-//  LogFile << "Look for CC " << std::endl
+//  LogFile << "Look for CC " << std::endl;
 
     if (winputfile[i].wIFlc == "CC")
     {
@@ -2756,12 +2933,13 @@ void CLEditFrame::LookForXX()
 }
 void CLEditFrame::ApplyCC()
 {
+
+    LogFile << "Apply CC " << std::endl;
+
 // increases the file size
 // apply the copied line - or the block of copied lines
 // from input to work input
 // where ever there is an After or Before line command
-
-    LogFile << "Apply CC " << std::endl;
 
     InitWIF();
 
@@ -2804,6 +2982,8 @@ void CLEditFrame::ApplyCC()
 void CLEditFrame::LineCopy()
 {
 
+    LogFile << "Line Copy " << std::endl;
+
     if (inputfile[i].IFlc == "A")
     {
         // copy the current line as is
@@ -2836,6 +3016,8 @@ void CLEditFrame::LineCopy()
 }
 void CLEditFrame::BlockCopy()
 {
+
+    LogFile << "Block Copy " << std::endl;
 
     if (inputfile[i].IFlc == "A")
     {
@@ -2875,9 +3057,10 @@ void CLEditFrame::BlockCopy()
 }
 void CLEditFrame::ApplyDD()
 {
-// reduces the file size
+
     LogFile << "Apply DD " << std::endl;
 
+// reduces the file size
     InitWIF();
 
     oldwfilecnt = wfilecnt;
@@ -2912,6 +3095,8 @@ void CLEditFrame::ApplyDD()
 void CLEditFrame::LineDelete()
 {
 
+    LogFile << "Line Delete " << std::endl;
+
     if (inputfile[i].IFlc == "D")
     {
         wfilecnt--;  // skip the record - decrease the file size
@@ -2925,6 +3110,8 @@ void CLEditFrame::LineDelete()
 }
 void CLEditFrame::BlockDelete()
 {
+
+    LogFile << "Block Delete " << std::endl;
 
     if (i >= DDstart
     &&  i <= DDend)
@@ -2940,9 +3127,10 @@ void CLEditFrame::BlockDelete()
 }
 void CLEditFrame::ApplyMM()
 {
-// the file will be the same size
+
     LogFile << "Apply MM " << std::endl;
 
+// the file will be the same size
     InitWIF();
 
     oldwfilecnt = wfilecnt;
@@ -2975,6 +3163,8 @@ void CLEditFrame::ApplyMM()
 }
 void CLEditFrame::LineMove()
 {
+
+    LogFile << "Line Move " << std::endl;
 
     if (inputfile[i].IFlc == "A")
     {
@@ -3013,6 +3203,8 @@ void CLEditFrame::LineMove()
 }
 void CLEditFrame::BlockMove()
 {
+
+    LogFile << "Block Move " << std::endl;
 
     if (inputfile[i].IFlc == "A")
     {
@@ -3058,10 +3250,10 @@ void CLEditFrame::BlockMove()
 }
 void CLEditFrame::ApplyOO()
 {
-// this will make the file smaller
 
     LogFile << "Apply OO " << std::endl;
 
+// this will make the file smaller
     if (singleO == 1)
     {
 // move everything from the Move Line into the Overlay Line where ever there is a space
@@ -3109,6 +3301,9 @@ void CLEditFrame::ApplyOO()
 }
 void CLEditFrame::LineOver()
 {
+
+    LogFile << "Line Over " << std::endl;
+
 // byte by byte where there is a blank
 
     Mstrl = minputfile.mIFCode.length();
@@ -3215,6 +3410,8 @@ void CLEditFrame::BlockMoveOver()
 void CLEditFrame::LinePushOver()
 {
 
+    LogFile << "Line Push Over " << std::endl;
+
     if (inputfile[i].IFlc == "M")
     {
         // skip the record - decrease the file size
@@ -3238,6 +3435,8 @@ void CLEditFrame::LinePushOver()
 }
 void CLEditFrame::BlockPushOver()
 {
+
+    LogFile << "Block Push Over " << std::endl;
 
     if (i >= MMstart
     &&  i <= MMend)
@@ -3265,12 +3464,13 @@ void CLEditFrame::BlockPushOver()
 }
 void CLEditFrame::ApplyRR()
 {
+
+    LogFile << "Apply RR " << std::endl;
+
 // increases the file size
 // apply the repeated line - or the block of repeated lines
 // from input to work input
 // after the line command or after the last line of the block
-
-    LogFile << "Apply RR " << std::endl;
 
     InitWIF();
 
@@ -3311,6 +3511,8 @@ void CLEditFrame::ApplyRR()
 void CLEditFrame::LineRepeat()
 {
 
+    LogFile << "Line Repeat " << std::endl;
+
     if (inputfile[i].IFlc == "R")
     {
         // copy the current line as is from input to work
@@ -3328,6 +3530,8 @@ void CLEditFrame::LineRepeat()
 }
 void CLEditFrame::BlockRepeat()
 {
+
+    LogFile << "Block Repeat " << std::endl;
 
     if (inputfile[i].IFlc == "RR")
     {
@@ -3355,9 +3559,10 @@ void CLEditFrame::BlockRepeat()
 }
 void CLEditFrame::ApplySR()
 {
-// the file size stays the same
+
     LogFile << "Apply >> " << std::endl;
 
+// the file size stays the same
     InitWIF();
 
     oldwfilecnt = wfilecnt;
@@ -3392,6 +3597,8 @@ void CLEditFrame::ApplySR()
 void CLEditFrame::LineSR()
 {
 
+    LogFile << "Line SR " << std::endl;
+
     if (inputfile[i].IFlc == ">")
     {
         SRl = inputfile[i].IFCode.length();
@@ -3413,6 +3620,8 @@ void CLEditFrame::LineSR()
 }
 void CLEditFrame::BlockSR()
 {
+
+    LogFile << "Block SR " << std::endl;
 
     if (i >= SRstart
     &&  i <= SRend)
@@ -3438,6 +3647,8 @@ void CLEditFrame::BlockSR()
 void CLEditFrame::ShiftRight()
 {
 
+    LogFile << "Shift Right " << std::endl;
+
     winputfile[wi].wIFlc = "000000";
 
     winputfile[wi].wIFCode = "    ";
@@ -3448,9 +3659,10 @@ void CLEditFrame::ShiftRight()
 }
 void CLEditFrame::ApplySL()
 {
-// the file size stays the same
-    LogFile << "Apply << " << std::endl;
 
+    LogFile << "Apply SL " << std::endl;
+
+// the file size stays the same
     InitWIF();
 
 //    std::string::iterator it = inputfile[0].IFCode.begin();
@@ -3487,6 +3699,8 @@ void CLEditFrame::ApplySL()
 void CLEditFrame::LineSL()
 {
 
+    LogFile << "Line SL " << std::endl;
+
     if (inputfile[i].IFlc == "<")
     {
         str = inputfile[i].IFCode.substr(0, 4);
@@ -3509,6 +3723,8 @@ void CLEditFrame::LineSL()
 }
 void CLEditFrame::BlockSL()
 {
+
+    LogFile << "Block SL " << std::endl;
 
     if (i >= SLstart
     &&  i <= SLend)
@@ -3534,6 +3750,8 @@ void CLEditFrame::BlockSL()
 void CLEditFrame::ShiftLeft()
 {
 
+    LogFile << "Shift Left " << std::endl;
+
     winputfile[wi].wIFlc = "000000";
 
     SLl = inputfile[i].IFCode.length();
@@ -3547,15 +3765,31 @@ void CLEditFrame::ShiftLeft()
 void CLEditFrame::ApplyXX()
 {
 
-    LogFile << "Look for XX " << std::endl;
+    LogFile << "Apply XX " << std::endl;
+
+// no change to the file size - just the view
+
+    for (i = 0; i < wfilecnt; i++)
+    {
+        if (inputfile[i].IFlc == "X"
+        ||  inputfile[i].IFlc == "XX")
+        {
+            inputfile[i].IFlc      = "000000";
+            winputfile[i].wIFlc   = "000000";
+            winputfile[i].wIFCode = inputfile[i].IFCode;
+            XX[i].excluded = true;
+        }
+    }
+
+// impact is to Load Screen - impact the view
 
 }
 void CLEditFrame::ApplyI()
 {
-// increases the file size
 
     LogFile << "Apply I " << std::endl;
 
+// increases the file size
     InitWIF();
 
     oldwfilecnt = wfilecnt;
@@ -3581,6 +3815,8 @@ void CLEditFrame::ApplyI()
 void CLEditFrame::LineInsert()
 {
 
+    LogFile << "Line Insert " << std::endl;
+
     if (inputfile[i].IFlc == "I")
     {
         // copy the current line as is from input to work
@@ -3601,6 +3837,8 @@ void CLEditFrame::LineInsert()
 void CLEditFrame::CopyTheLine()
 {
 
+    LogFile << "Copy The Line " << std::endl;
+
     winputfile[wi].wIFlc   = "000000";
     winputfile[wi].wIFCode = inputfile[i].IFCode;
     wi++;
@@ -3608,6 +3846,8 @@ void CLEditFrame::CopyTheLine()
 }
 void CLEditFrame::RefreshInput()
 {
+
+    LogFile << "Refresh Input " << std::endl;
 
     InitIF();
 
@@ -3670,6 +3910,12 @@ void CLEditFrame::Initialize()
     SecondParameter = "";   // the second parameter
     ThirdParameter  = "";   // the third parameter
 
+// for binary search
+    left = 0;               // lower bound of array
+    right = 0;              // upper bound of array
+    mid = 0;                // location of 'key' if found
+    key = "";               // key value to search for
+
 // this is the "screen" 50 lines of visible code ( line command area 6 bytes / line of code 80 bytes)
     InitUser();
 // to make the line command area pretty "000010"
@@ -3704,6 +3950,8 @@ void CLEditFrame::Initialize()
     InitFF();
 // index to found strings - change from
     InitTF();
+// index to excluded lines
+    InitXX();
 
 }
 void CLEditFrame::InitCF()
@@ -3721,6 +3969,7 @@ void CLEditFrame::InitCF()
 }
 void CLEditFrame::InitDB()
 {
+
     LogFile << "Init DB File " << std::endl;
 // file to or from stage database functions
 
@@ -3759,6 +4008,8 @@ void CLEditFrame::InitTF()
 }
 void CLEditFrame::InitCTrackers()
 {
+
+    LogFile << "Init CT Trackers " << std::endl;
 
     changes = false;            // did anything on the screen change - effects scrolling
     changesapplied = true;      // did the changes get applied - might be incomplete request
@@ -3832,6 +4083,7 @@ void CLEditFrame::InitCTrackers()
 }
 void CLEditFrame::InitScreen()
 {
+
     LogFile << "Init Screen " << std::endl;
 
     for (u =0; u < 50; u++)
@@ -3844,7 +4096,7 @@ void CLEditFrame::InitScreen()
 void CLEditFrame::InitUser()
 {
 
-    LogFile << "Init User Input " << std::endl;
+    LogFile << "Init User " << std::endl;
 
 // this is the input from the user screen
 // 50 lines on the screen
@@ -3874,7 +4126,8 @@ void CLEditFrame::InitUser()
 void CLEditFrame::InitIF()
 {
 
-    LogFile << "Init Input File " << std::endl;
+    LogFile << "Init IF " << std::endl;
+
 // the file being processed
     FileSizeError = false;      // file size error - exceeds 25000 lines
 
@@ -3890,7 +4143,8 @@ void CLEditFrame::InitIF()
 void CLEditFrame::InitWIF()
 {
 
-    LogFile << "Init Work File " << std::endl;
+    LogFile << "Init WIF " << std::endl;
+
 // the work file being processed
 //  wfilecnt = 0;       // NO! do not set to zero!
 //  oldwfilecnt = 0;    // NO! do not set to zero!
@@ -3906,7 +4160,8 @@ void CLEditFrame::InitWIF()
 void CLEditFrame::InitCC()
 {
 
-    LogFile << "Init Copy / Block Copy " << std::endl;
+    LogFile << "Init CC " << std::endl;
+
 // a line to be Copied
     haveaCC = false;
     ccinputfile[0].cIFCode = "";    // Code string
@@ -3924,7 +4179,7 @@ void CLEditFrame::InitCC()
 void CLEditFrame::InitMM()
 {
 
-    LogFile << "Init Move / Block Move " << std::endl;
+    LogFile << "Init MM " << std::endl;
 
     singleM = 0;  // Move a line - need Before(s) or After(s)
     blockMM = false;  // Move a block of lines - need Before(s) or After(s)
@@ -3943,7 +4198,8 @@ void CLEditFrame::InitMM()
 void CLEditFrame::InitOO()
 {
 
-    LogFile << "Init Overlay / Block Overlay " << std::endl;
+    LogFile << "Init OO " << std::endl;
+
     singleO = 0;  // Overlay a line - needs single Move
     blockOO = false;  // Overlay a block of lines - needs a block Move
 // a line to be overlaid
@@ -3961,7 +4217,8 @@ void CLEditFrame::InitOO()
 void CLEditFrame::InitRR()
 {
 
-    LogFile << "Init Repeat / Block Repeat " << std::endl;
+    LogFile << "Init RR " << std::endl;
+
     singleR = 0;  // Repeat a line
     blockRR = false;  // Repeat a block of lines
 // a line to be Repeated
@@ -3972,6 +4229,17 @@ void CLEditFrame::InitRR()
     for (i = 1; i < 2000; i++)
     {
         rrinputfile[i] = rrinputfile[0];
+    }
+
+}
+void CLEditFrame::InitXX()
+{
+
+    LogFile << "Init XX " << std::endl;
+
+    for (i = 1; i < 25000; i++)
+    {
+        XX[i].excluded = false;
     }
 
 }
@@ -4007,9 +4275,18 @@ void CLEditFrame::CreateControls()
     ypos = 20;
     for (u = 0; u < 50; u++)
     {
-        CL[u].Line = new wxTextCtrl(Panel,wxID_ANY,"000000",wxPoint(1,ypos),wxSize(60,20),wxBORDER_NONE);
+        CL[u].Line = new wxTextCtrl(Panel
+    `                              ,wxID_ANY
+                                   ,"000000"
+                                   ,wxPoint(1,ypos)
+                                   ,wxSize(60,20),wxBORDER_NONE);
         CL[u].Line->SetMaxLength(6);
-        CL[u].Code = new wxTextCtrl(Panel,wxID_ANY,"",wxPoint(61,ypos),wxSize(1610,20),wxBORDER_NONE);
+        CL[u].Code = new wxTextCtrl(Panel
+                                   ,wxID_ANY
+                                   ,""
+                                   ,wxPoint(61,ypos)
+                                   ,wxSize(1610,20)
+                                   ,wxBORDER_NONE);
         CL[u].Code->SetMaxLength(200);
         ypos += 20;
     }
