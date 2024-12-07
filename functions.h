@@ -33,14 +33,15 @@
         void ChangeOver();
         void ChangeOverShort();
         void ChangeOverLong();
+        void eXclude();
         void Reset();
         void WipeCommand();
         void Create();
         void CreateFile();
         void CreateTable();
         void TrimFile();
-        void SetEndl();
         void GetEndl();
+        void PageofPage();
 
 // event handlers
         void OnKeyDown(wxKeyEvent & event);
@@ -83,6 +84,7 @@
         void LCReasonabilityBlockMM();
         void LCReasonabilityLine();
         void LCReasonabilityOverall();
+        void Continue();
 
         void LookForLCCC();
         void LookForLCDD();
@@ -93,6 +95,7 @@
         void LookForLCSL();
         void LookForLCXX();
         void LookForFF();
+        void CaptureFF();
         void LookForTF();
 
         void CaptureLC();
@@ -123,6 +126,8 @@
         void BlockMoveOver();
         void LinePushOver();
         void BlockPushOver();
+        void MoveOverOver();
+        void MoveBlockOver();
 // Repeat
         void LookForRR();
         void CaptureRR();
@@ -170,3 +175,4 @@
         void ToStage();
 // functions related to SORT processing
         void SortSM();
+        int BiSearch();
