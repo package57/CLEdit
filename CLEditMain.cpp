@@ -978,8 +978,9 @@ void CLEditFrame::CreateTable()
     }
 
     DB.DataBase = FirstParameter;
-
     DB.TableName = SecondParameter;
+
+    DB.Initialize();
 // the next three lines are the equivalent of an "open"
 //create a driver object
     DB.Driver();
@@ -1362,6 +1363,7 @@ void CLEditFrame::FromStage()
     DB.DataBase = FirstParameter;
     DB.TableName = SecondParameter;
 
+    DB.Initialize();
 // we are creating stuff with the "new" keyword here - so we need to delete when not in use
 // the next three lines are the equivalent of an "open"
 // create a driver object
@@ -1450,6 +1452,7 @@ void CLEditFrame::ToStage()
     DB.DataBase = FirstParameter;
     DB.TableName = SecondParameter;
 
+    DB.Initialize();
 // we are creating stuff with the "new" keyword here - so we need to delete when not in use
 // the next three lines are the equivalent of an "open"
 // create a driver object

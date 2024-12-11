@@ -28,6 +28,8 @@ class CLEditDB
         int rowcnt = 0;
         int abendi;
         int u;
+        int i;
+        int n;
         bool OnOne;
 
         std::string what = "";
@@ -37,6 +39,8 @@ class CLEditDB
         std::string TableName;
         std::string Query;
         std::string CodeStr;
+        int         CodeStrl;
+        std::string CodeNew;
         int         CodeId;
        	stringstream sql;
 
@@ -52,10 +56,10 @@ class CLEditDB
         sql::PreparedStatement * pstmt;
         sql::ResultSet * res;
 
+        void Initialize();
         void InitInputFile();
         void Driver();
         void Connect();
-        void Free();
         void Statement();
         int  Cursor();
         void FromStage();
@@ -64,7 +68,9 @@ class CLEditDB
         void DropTable();
         void CreateTable();
         void InsertRow();
+        void FixQuote();
         void Error();
+        void Free();
 
     protected:
 

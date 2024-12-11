@@ -2,19 +2,21 @@
 using namespace std;
 CLEditDB::CLEditDB()
 {
+    //ctor
+}
+CLEditDB::~CLEditDB()
+{
+    //dtor
+}
+void CLEditDB::Initialize()
+{
 
     LogFile.open("CLEditDBLogFile.txt", std::ios::out);
     ErrFile.open("CLEditDBErrFile.txt", std::ios::out);
 
-    LogFile << "Constructor " << std::endl;
+    LogFile << "Initialize " << std::endl;
 
     OnOne = true;
-
-}
-CLEditDB::~CLEditDB()
-{
-
-    LogFile << "Destructor " << std::endl;
 
 }
 void CLEditDB::Driver()
@@ -210,7 +212,7 @@ void CLEditDB::CreateTable()
         Query = "";
         Query += "CREATE TABLE ";
         Query += TableName;
-        Query += " (idCLEdit INT, CLEditcode VARCHAR(255));";
+        Query += " (id INT, code VARCHAR(255));";
         stmt->execute(Query);
     }
     catch (sql::SQLException &e)
@@ -231,7 +233,21 @@ void CLEditDB::InsertRow()
         OnOne = false;
     }
 
+// unfortunately MySQL cannot handle a single quote in a string intended to be stored as a varchar
+// we need to look for single quotes and double them from ' to ''. two single quotes for each one
+// MySql will drop the 'extra' single quote when it selects the value - that's nice isn't it
+// we put this fix in this module because this is the module with the issue
     CodeStr = inputfile[u].IFCode;
+    CodeStrl = CodeStr.length();
+    CodeNew = "";
+
+    for (i = 0; i < CodeStrl; i++)
+    {
+        FixQuote();
+    }
+
+    CodeStr = "";
+    CodeStr = CodeNew;
     CodeId++;
 
     try
@@ -239,7 +255,7 @@ void CLEditDB::InsertRow()
         sql.str("");
         sql << "INSERT INTO ";
         sql << TableName;
-        sql << "(idCLEdit, CLEditcode) VALUES (";
+        sql << "(id, code) VALUES (";
         sql << CodeId << ", '" << CodeStr << "')";
         stmt->execute(sql.str());
     }
@@ -249,6 +265,22 @@ void CLEditDB::InsertRow()
         what = e.what();
         state = e.getSQLState();
         Error();
+    }
+
+}
+void CLEditDB::FixQuote()
+{
+
+    if (CodeStr[i] == '\'')
+    {
+    //  add an extra quote
+        CodeNew += CodeStr[i];
+        CodeNew += '\'';
+    }
+    else
+    {
+    //  just copy the byte
+        CodeNew += CodeStr[i];
     }
 
 }
@@ -265,10 +297,10 @@ void CLEditDB::FromStage()
         while (res->next())
         {
             std::cout << "CLEdit ";
-            std::cout << " id "   << res->getInt("idCLEdit");
-            std::cout << " line " << res->getString("CLEditcode");
+            std::cout << " id "   << res->getInt("id");
+            std::cout << " code " << res->getString("code");
             std::cout << endl;
-            inputfile[i].IFCode = res->getString("CLEditcode");
+            inputfile[i].IFCode = res->getString("code");
             i++;
         }
     }
