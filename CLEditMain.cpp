@@ -1509,7 +1509,7 @@ void CLEditFrame::SortSM()
 
     for (i = 0; i < wfilecnt; i++)
     {
-        SM.inputfile[i].IFCode = winputfile[i].wIFCode;
+        SortArea();
     }
 
     SM.rowcnt = wfilecnt;
@@ -1548,8 +1548,44 @@ void CLEditFrame::SortSM()
     WipeCommand();
 
 }
+void CLEditFrame::SortArea()
+{
+
+    if (i == 1)
+    {
+        LogFile << "SortArea " << std::endl;
+    }
+// we need the length of the code line
+    WorkStrl = winputfile[i].wIFCode.length();
+// assume we get nothing
+    SM.inputfile[i].sortarea = "";
+// we cant look at the line if it's shorter than what we want sorted
+// pretend we want to sort the first 5 characters length
+// after the first 5 characters, starting position 6
+// meaning characters 6,7,8,9 & 10
+    if  (WorkStrl >=  10)
+    {
+        WorkStr = winputfile[i].wIFCode.substr(6, 5);
+        SM.inputfile[i].sortarea += WorkStr;
+    }
+// and we want to sort the first 5 characters after the first 20
+// meaning characters 21,22,23,24 & 25
+    if  (WorkStrl >=  25)
+    {
+        WorkStr = winputfile[i].wIFCode.substr(21, 5);
+        SM.inputfile[i].sortarea += WorkStr;
+    }
+
+    SM.inputfile[i].IFCode = winputfile[i].wIFCode;
+
+}
 int CLEditFrame::BiSearch()
 {
+
+    if (mid == 0)
+    {
+        LogFile << "BiSearch " << std::endl;
+    }
 
     while (left <= right)
     {
