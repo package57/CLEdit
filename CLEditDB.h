@@ -61,7 +61,8 @@ class CLEditDB
         void Driver();
         void Connect();
         void Statement();
-        int  Cursor();
+        int  Count();
+        void Cursor();
         void FromStage();
         void ToStage();
         void UseDb();

@@ -74,7 +74,7 @@ void CLEditDB::Statement()
     }
 
 }
-int CLEditDB::Cursor()
+int CLEditDB::Count()
 {
 
     LogFile << "Count(*) " << std::endl;
@@ -105,6 +105,12 @@ int CLEditDB::Cursor()
         Error();
     }
 
+    return rowcnt;
+
+}
+void CLEditDB::Cursor()
+{
+
     LogFile << "Cursor " << std::endl;
 
     try
@@ -124,8 +130,6 @@ int CLEditDB::Cursor()
         state = e.getSQLState();
         Error();
     }
-
-    return rowcnt;
 
 }
 void CLEditDB::InitInputFile()
@@ -233,10 +237,6 @@ void CLEditDB::InsertRow()
         OnOne = false;
     }
 
-// unfortunately MySQL cannot handle a single quote in a string intended to be stored as a varchar
-// we need to look for single quotes and double them from ' to ''. two single quotes for each one
-// MySql will drop the 'extra' single quote when it selects the value - that's nice isn't it
-// we put this fix in this module because this is the module with the issue
     CodeStr = inputfile[u].IFCode;
     CodeStrl = CodeStr.length();
     CodeNew = "";
@@ -296,10 +296,10 @@ void CLEditDB::FromStage()
         int i = 0;
         while (res->next())
         {
-            std::cout << "CLEdit ";
-            std::cout << " id "   << res->getInt("id");
-            std::cout << " code " << res->getString("code");
-            std::cout << endl;
+            LogFile << "CLEdit ";
+            LogFile << " id "   << res->getInt("id");
+            LogFile << " code " << res->getString("code");
+            LogFile << std::endl;
             inputfile[i].IFCode = res->getString("code");
             i++;
         }

@@ -41,6 +41,7 @@ void CreateFile();
 void CreateTable();
 void TrimFile();
 void GetEndl();
+void SetEndl();
 void PageofPage();
 
 // event handlers

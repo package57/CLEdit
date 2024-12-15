@@ -4,7 +4,7 @@ std::fstream ErrFile;
 
 // file processing
 // this is an instance of a class to process a file
-CLEditCF CF;
+CLEditCF * CF;
 
 // database processing
 // this is an instance of a class to access the database

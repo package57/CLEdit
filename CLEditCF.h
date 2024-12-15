@@ -16,7 +16,6 @@ class CLEditCF
         std::string fileiname;
         std::string fileoname;
 
-        int fileibytecnt;
         int fileireccnt;
         int fileoreccnt;
 
@@ -36,22 +35,17 @@ class CLEditCF
 
     private:
 
+        std::fstream LogFile;
+        std::fstream ErrFile;
         std::fstream filei;
-        char fileic;
-        int fileitellg;
-
-
         std::fstream fileo;
-        char fileoc;
+
+        int fileibytecnt;
+        int fileobytecnt;
+
+        int fileitellg;
         int fileoi;
         int fileotellg;
-        char fileir[201];
-
-        std::string mode;
-        std::string str;
-        char arr[201];
-        char tick;
-        char tack;
         int i;
         int j;
         int k;
@@ -59,22 +53,38 @@ class CLEditCF
         int Outreccnt;
         int start_s;
         int stop_s;
-        std::string msg;
         int abendi;
+
+        char fileic;
+        char fileoc;
+        char fileir[253];  // the largest record allowed for IBM TSO PDS BIM
+        char arr[253];     // the largest record allowed for IBM TSO PDS BIM
+        char tick;
+        char tack;
+
+        std::string str;
+        std::string msg;
+
         bool abend;
 
         void init();
+        void openlog();
+        void openerr();
+        void closelog();
+        void closeerr();
         void openfo();
         void openfi();
-        void closefi();
         void closefo();
-        void eop();
+        void closefi();
         void processfir();
+        void processfircopy();
         void readfir();
         void processfor();
+        void processforcopy();
         void writefor();
         void initfileir();
         void initsavefileir();
         void stringtochar();
+        void eop();
 
 };
