@@ -8,11 +8,47 @@ CLEditDB::~CLEditDB()
 {
     //dtor
 }
-void CLEditDB::Initialize()
+int CLEditDB::Bind()
 {
 
-    LogFile.open("CLEditDBLogFile.txt", std::ios::out);
-    ErrFile.open("CLEditDBErrFile.txt", std::ios::out);
+    Initialize();
+
+    if  (abendi != 0)
+    {
+        return abendi;
+    }
+
+    Driver();
+
+    if  (abendi != 0)
+    {
+        return abendi;
+    }
+
+    Connect();
+
+    if  (abendi != 0)
+    {
+        return abendi;
+    }
+
+    Statement();
+
+    if  (abendi != 0)
+    {
+        return abendi;
+    }
+
+    return abendi;
+
+}
+void CLEditDB::Initialize()
+{
+    abendi = 0;
+
+    OpenLog();
+
+    OpenErr();
 
     LogFile << "Initialize " << std::endl;
 
@@ -34,6 +70,7 @@ void CLEditDB::Driver()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3500;
     }
 
 }
@@ -53,6 +90,7 @@ void CLEditDB::Connect()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3501;
     }
 
 }
@@ -71,11 +109,14 @@ void CLEditDB::Statement()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3502;
     }
 
 }
 int CLEditDB::Count()
 {
+
+    start_s = clock();
 
     LogFile << "Count(*) " << std::endl;
 
@@ -103,13 +144,22 @@ int CLEditDB::Count()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3503;
     }
+
+    stop_s = clock();
+
+    action = "Count ";
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
     return rowcnt;
 
 }
 void CLEditDB::Cursor()
 {
+
+    start_s = clock();
 
     LogFile << "Cursor " << std::endl;
 
@@ -129,7 +179,14 @@ void CLEditDB::Cursor()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3504;
     }
+
+    stop_s = clock();
+
+    action = "Cursor ";
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::InitInputFile()
@@ -148,6 +205,8 @@ void CLEditDB::InitInputFile()
 void CLEditDB::ToStage()
 {
 
+    start_s = clock();
+
     LogFile << "To Stage " << std::endl;
 
     UseDb();
@@ -161,6 +220,12 @@ void CLEditDB::ToStage()
     {
         InsertRow();
     }
+
+    stop_s = clock();
+
+    action = "To Stage ";
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::UseDb()
@@ -182,6 +247,7 @@ void CLEditDB::UseDb()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3505;
     }
 
 }
@@ -203,6 +269,7 @@ void CLEditDB::DropTable()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3506;
     }
 
 }
@@ -225,6 +292,7 @@ void CLEditDB::CreateTable()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3507;
     }
 
 }
@@ -265,6 +333,7 @@ void CLEditDB::InsertRow()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3508;
     }
 
 }
@@ -286,6 +355,8 @@ void CLEditDB::FixQuote()
 }
 void CLEditDB::FromStage()
 {
+
+    start_s = clock();
 
     LogFile << "From Stage " << std::endl;
 
@@ -310,7 +381,14 @@ void CLEditDB::FromStage()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3509;
     }
+
+    stop_s = clock();
+
+    action = "From Stage ";
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::Free()
@@ -318,11 +396,83 @@ void CLEditDB::Free()
 
     LogFile << "Free " << std::endl;
 
+    Freecon();
+
+    Freestmt();
+
+    Freepstmt();
+
+    Freeres();
+
+    CloseLog();
+
+    CloseErr();
+
+}
+void CLEditDB::Freecon()
+{
+
+    LogFile << "Free con " << std::endl;
+
     try
     {
         delete con;
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+        abendi = 3510;
+    }
+
+}
+void CLEditDB::Freestmt()
+{
+
+    LogFile << "Free stmt " << std::endl;
+
+    try
+    {
         delete stmt;
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+        abendi = 3511;
+    }
+
+}
+void CLEditDB::Freepstmt()
+{
+
+    LogFile << "Free pstmt " << std::endl;
+
+    try
+    {
         delete pstmt;
+    }
+    catch (sql::SQLException &e)
+    {
+        errorcode = e.getErrorCode();
+        what = e.what();
+        state = e.getSQLState();
+        Error();
+        abendi = 3512;
+    }
+
+}
+void CLEditDB::Freeres()
+{
+
+    LogFile << "Free res " << std::endl;
+
+    try
+    {
         delete res;
     }
     catch (sql::SQLException &e)
@@ -331,7 +481,9 @@ void CLEditDB::Free()
         what = e.what();
         state = e.getSQLState();
         Error();
+        abendi = 3513;
     }
+
 }
 void CLEditDB::Error()
 {
@@ -347,6 +499,92 @@ void CLEditDB::Error()
     ErrFile << " (MySQL error code: " << errorcode;
     ErrFile << ", SQLState: " << state << " )" << std::endl;
 
-    exit(abendi);
+//  exit(abendi);
+
+}
+void CLEditDB::OpenLog()
+{
+
+    LogFile.open("CLEditDBLogFile.txt", ios_base::out | ios_base::app);
+
+    if  (!LogFile.is_open())
+    {
+        msg = "Log file Open error";
+        abendi = 3514;
+        std::cout << msg << abendi << std::endl;    // better than flying blind
+        return;
+    }
+
+    bytecnt = LogFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseLog();
+        OpenLogn();
+    }
+
+    LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+
+}
+void CLEditDB::OpenLogn()
+{
+
+    LogFile.open("CLEditDBLogFile.txt", ios_base::out);
+
+    if  (!LogFile.is_open())
+    {
+        msg = "Log file Open error";
+        abendi = 3515;
+        std::cout << msg << abendi << std::endl;    // better than flying blind
+        return;
+    }
+
+}
+void CLEditDB::CloseLog()
+{
+
+    LogFile.close();
+
+}
+void CLEditDB::OpenErr()
+{
+    ErrFile.open("CLEditDBErrFile.txt", std::ios::out | ios_base::app);
+
+    if  (!ErrFile.is_open())
+    {
+        msg = "Error file Open error";
+        abendi = 3516;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+    bytecnt = ErrFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseErr();
+        OpenErrn();
+    }
+
+    LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+
+}
+void CLEditDB::OpenErrn()
+{
+    ErrFile.open("CLEditDBErrFile.txt", std::ios::out);
+
+    if  (!ErrFile.is_open())
+    {
+        msg = "Error file Open error";
+        abendi = 3517;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+}
+void CLEditDB::CloseErr()
+{
+
+    ErrFile.close();
 
 }

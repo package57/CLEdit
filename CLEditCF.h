@@ -5,6 +5,7 @@
 #include <cstring>
 #include <ctime>
 #include <ctype.h>
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditCF
 {
@@ -16,8 +17,7 @@ class CLEditCF
         std::string fileiname;
         std::string fileoname;
 
-        int fileireccnt;
-        int fileoreccnt;
+        int reccnt;
 
         struct InputFile
         {
@@ -40,7 +40,10 @@ class CLEditCF
         std::fstream filei;
         std::fstream fileo;
 
+        int bytecnt;        // bytes in a file
+        int fileireccnt;
         int fileibytecnt;
+        int fileoreccnt;
         int fileobytecnt;
 
         int fileitellg;
@@ -64,22 +67,27 @@ class CLEditCF
 
         std::string str;
         std::string msg;
+        std::string action;
 
         bool abend;
 
         void init();
-        void openlog();
-        void openerr();
-        void closelog();
-        void closeerr();
+        void OpenLog();
+        void OpenLogn();
+        void CloseLog();
+        void OpenErr();
+        void OpenErrn();
+        void CloseErr();
         void openfo();
         void openfi();
         void closefo();
         void closefi();
-        void processfir();
+//      File Input Record
+        void processfiropen();
         void processfircopy();
         void readfir();
-        void processfor();
+//      File Output Record
+        void processforopen();
         void processforcopy();
         void writefor();
         void initfileir();

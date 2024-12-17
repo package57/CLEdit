@@ -1,6 +1,9 @@
 // variables
 // characters
 char Byte;          // do nothing - like a continue *here
+int bytecnt;        // bytes in a file
+int start_s;
+int stop_s;
 // integers
 int u;              // index into user input
 int ypos;           // Y position up/down
@@ -67,6 +70,7 @@ std::string ReturnFunction; // the name of the function running
 std::string ReturnCode;     // a return code
 std::string ReturnMessage;  // a meaningful return message
 std::string WorkStr;         // a work string
+std::string action;
 
 // boolian
 bool FileSizeError;  // file size error - exceeds 25000 lines

@@ -14,8 +14,9 @@ CLEditFrame::CLEditFrame(const wxString & title)
           ,wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
 {
 
-    LogFile.open("CLEditLog.txt", std::ios::out);
-    ErrFile.open("CLEditErr.txt", std::ios::out);
+    OpenLog();
+
+    OpenErr();
 
     CreateControls();
 
@@ -24,7 +25,7 @@ CLEditFrame::CLEditFrame(const wxString & title)
     if (Return == false)
     {
         ReturnFunction = "CreateControls ";
-        ReturnCode = "3500 ";
+        ReturnCode = "3501 ";
         ReturnMessage = " Create Controls failure";
         OnTerminal();
     }
@@ -880,8 +881,10 @@ void CLEditFrame::FindThird()
 void CLEditFrame::OnTerminal()
 {
 
-    LogFile << "On Terminal " << std::endl;
-    ErrFile << ReturnFunction << ReturnCode << ReturnMessage << std::endl;
+    std::cout << "On Terminal " << std::endl;
+    std::cout << ReturnFunction << ReturnCode << ReturnMessage << std::endl;
+
+    exit(9999);
 
 }
 void CLEditFrame::Create()
@@ -907,7 +910,6 @@ void CLEditFrame::Create()
         goto ExitCreate;
     }
 
-    CurrentFile = FirstParameter;
     if (SecondParameter == "")
     {
         CreateFile();
@@ -925,9 +927,18 @@ ExitCreate:
 void CLEditFrame::CreateFile()
 {
 
+    start_s = clock();
+    action = "Create File ";
+
     LogFile << "Create File" << std::endl;   // need a block copy and file name
 
-    CLEditCF * CF = new CLEditCF;
+    if  (FirstParameter == "")
+    {
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " file name to Create File missing");
+        WipeCommand();
+        return;
+    }
+
 
     InitCF();
 
@@ -935,12 +946,12 @@ void CLEditFrame::CreateFile()
     {
         WorkStr = ccinputfile[i].cIFCode;
         SetEndl();
-        CF->inputfile[i].IFCode = WorkStr;
+        CF.inputfile[i].IFCode = WorkStr;
     }
 
-    CF->fileoname = CurrentFile;
-    CF->fileoreccnt = CCrows;
-    CLEditCFrc = CF->savefile(CF->fileoname);
+    CF.fileoname = FirstParameter;
+    CF.reccnt = CCrows;
+    CLEditCFrc = CF.savefile(CF.fileoname);
 
     if  (CLEditCFrc != 0)
     {
@@ -954,9 +965,11 @@ void CLEditFrame::CreateFile()
 
 ExitCreateFile:
 
-     delete CF;
+    WipeCommand();
 
-     WipeCommand();
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::SetEndl()
@@ -964,7 +977,13 @@ void CLEditFrame::SetEndl()
 
     WorkStrl = WorkStr.length();
 
-    for (pos = (WorkStrl - 1); pos > 0; pos--)
+    if (WorkStrl == 1)
+    {
+        WorkStr[0] = '\n';
+        return;
+    }
+
+    for (pos = (WorkStrl - 1); pos > -1; pos--)
     {
         if (WorkStr[pos] != ' ')
         {
@@ -973,7 +992,7 @@ void CLEditFrame::SetEndl()
                 WorkStr += '\n';
                 return;
             }
-            else                       // this means the line ends with a spaace
+            else                       // this means the line ends with a space
             {
                 pos++;
                 WorkStr[pos] = '\n';
@@ -986,7 +1005,26 @@ void CLEditFrame::SetEndl()
 void CLEditFrame::CreateTable()
 {
 
+    start_s = clock();
+    action = "Create Table ";
+
     LogFile << "Create Table" << std::endl;   // need a block copy and file name
+
+// the next three lines are the equivalent of an "open"
+// create a driver object
+// create a connection object
+// create a statement object
+    DB.DataBase = FirstParameter;
+    DB.TableName = SecondParameter;
+    res = DB.Bind();
+
+    if (res != 0)
+    {
+        LoadScreen();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + SecondParameter + " failed " + to_string(res));
+        WipeCommand();
+        return;
+    }
 
     InitDB();
 
@@ -997,23 +1035,11 @@ void CLEditFrame::CreateTable()
         DB.inputfile[i].IFCode = WorkStr;
     }
 
-    DB.DataBase = FirstParameter;
-    DB.TableName = SecondParameter;
-    DB.Initialize();
-
-// the next three lines are the equivalent of an "open"
-//create a driver object
-    DB.Driver();
-
-//create a connection object
-    DB.Connect();
-
-//create a statement object
-    DB.Statement();
     DB.rowcnt = CCrows;
+
     DB.ToStage();
 
-// "close" the database
+// close
     DB.Free();
 
     LoadScreen();   //always from work input
@@ -1022,9 +1048,16 @@ void CLEditFrame::CreateTable()
 
     WipeCommand();
 
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+
 }
 void CLEditFrame::SaveFile()
 {
+
+    start_s = clock();
+    action = "Save File ";
 
     LogFile << "Save File " << std::endl;
 
@@ -1049,20 +1082,16 @@ void CLEditFrame::SaveFile()
         TrimFile();
     }
 
-    CLEditCF * CF = new CLEditCF;
-
     for (i = 0; i < wfilecnt; i++)
     {
         WorkStr = winputfile[i].wIFCode;
         SetEndl();
-        CF->inputfile[i].IFCode = WorkStr;
+        CF.inputfile[i].IFCode = WorkStr;
     }
 
-    CF->fileoname = CurrentFile;
-    CF->fileoreccnt = wfilecnt;
-    CLEditCFrc = CF->savefile(CF->fileoname);
-
-    delete CF;
+    CF.fileoname = CurrentFile;
+    CF.reccnt = wfilecnt;
+    CLEditCFrc = CF.savefile(CF.fileoname);
 
     if  (CLEditCFrc != 0)
     {
@@ -1071,11 +1100,16 @@ void CLEditFrame::SaveFile()
     }
 
     LoadScreen();   //always from work input
+
     wxLogStatus(PrimaryCommand + " " + CurrentFile + " applied");
 
 ExitSaveFile:
 
-     WipeCommand();
+    WipeCommand();
+
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::TrimFile()
@@ -1095,13 +1129,16 @@ void CLEditFrame::TrimFile()
 void CLEditFrame::SaveAsFile()
 {
 
+    start_s = clock();
+    action = "Save As File ";
+
     LogFile << "SaveAs " << std::endl;
 
     if  (FirstParameter == "")
     {
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " file name to Save As missing");
         WipeCommand();
-        return; // goto ExitSaveAsFile;
+        return;
     }
     else
     {
@@ -1115,18 +1152,16 @@ void CLEditFrame::SaveAsFile()
         TrimFile();
     }
 
-    CLEditCF * CF = new CLEditCF;
-
     for (i = 0; i < wfilecnt; i++)
     {
         WorkStr = winputfile[i].wIFCode;
         SetEndl();
-        CF->inputfile[i].IFCode = WorkStr;
+        CF.inputfile[i].IFCode = WorkStr;
     }
 
-    CF->fileoname = CurrentFile;
-    CF->fileoreccnt = wfilecnt;
-    CLEditCFrc = CF->savefile(CF->fileoname);
+    CF.fileoname = CurrentFile;
+    CF.reccnt = wfilecnt;
+    CLEditCFrc = CF.savefile(CF.fileoname);
 
     if  (CLEditCFrc != 0)
     {
@@ -1140,15 +1175,21 @@ void CLEditFrame::SaveAsFile()
 
 ExitSaveAsFile:
 
-    delete CF;
-
     WipeCommand();
+
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::Exit()
 {
 
     LogFile << "Exit " << std::endl;
+
+    CloseLog();
+
+    CloseErr();
 
     wxExit();
 
@@ -1197,6 +1238,9 @@ void CLEditFrame::eXclude()
 void CLEditFrame::OpenFile()
 {
 
+    start_s = clock();
+    action = "Open File ";
+
     LogFile << "Open File " << std::endl;
 
     if (FirstParameter == "")
@@ -1208,13 +1252,11 @@ void CLEditFrame::OpenFile()
 
     InitScreen();
 
-    CLEditCF * CF = new CLEditCF;
-
     CurrentFile = FirstParameter;
-    CF->fileiname = FirstParameter;
+    CF.fileiname = FirstParameter;
 
 // import the file
-    CLEditCFrc = CF->openfile(CF->fileiname);
+    CLEditCFrc = CF.openfile(CF.fileiname);
 
     if  (CLEditCFrc != 0)
     {
@@ -1227,7 +1269,7 @@ void CLEditFrame::OpenFile()
 
     InitWIF();
 
-    wfilecnt = CF->fileireccnt;
+    wfilecnt = CF.reccnt;
 
     if (wfilecnt > 23000)
     {
@@ -1238,12 +1280,12 @@ void CLEditFrame::OpenFile()
 
     haveaFile = true;
 
-    for (i = 0; i < CF->fileireccnt; i++)
+    for (i = 0; i < CF.reccnt; i++)
     {
         inputfile[i].IFlc     = "000000";
-        inputfile[i].IFCode   = CF->inputfile[i].IFCode;
+        inputfile[i].IFCode   = CF.inputfile[i].IFCode;
         winputfile[i].wIFlc   = "000000";
-        winputfile[i].wIFCode = CF->inputfile[i].IFCode;
+        winputfile[i].wIFCode = CF.inputfile[i].IFCode;
         GetEndl();
     }
 
@@ -1257,9 +1299,11 @@ void CLEditFrame::OpenFile()
 
 ExitOpenFile:
 
-    delete CF;
-
     WipeCommand();
+
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::PageofPage()
@@ -1299,7 +1343,10 @@ void CLEditFrame::PageofPage()
 void CLEditFrame::GetEndl()
 {
 
-    LogFile << "Get Endl " << std::endl;
+    if (i == 0)
+    {
+        LogFile << "Get Endl " << std::endl;
+    }
 
     WorkStr  = winputfile[i].wIFCode;
     WorkStrl = WorkStr.length();
@@ -1317,6 +1364,9 @@ void CLEditFrame::GetEndl()
 }
 void CLEditFrame::CopyFile()
 {
+
+    start_s = clock();
+    action = "Copy File ";
 
     LogFile << "Copy File " << std::endl;
 
@@ -1336,10 +1386,9 @@ void CLEditFrame::CopyFile()
         return; // goto ExitCopyFile;
     }
 
-    CLEditCF * CF = new CLEditCF;
-    CF->fileiname = FirstParameter;
-    CF->fileoname = SecondParameter;
-    CLEditCFrc = CF->copyfile(CF->fileiname, CF->fileoname);
+    CF.fileiname = FirstParameter;
+    CF.fileoname = SecondParameter;
+    CLEditCFrc = CF.copyfile(CF.fileiname, CF.fileoname);
 
     if  (CLEditCFrc != 0)
     {
@@ -1350,11 +1399,11 @@ void CLEditFrame::CopyFile()
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " applied");
     }
 
-// ExitCopyFile:
-
-    delete CF;
-
     WipeCommand();
+
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::CLEditCFmsg()
@@ -1379,6 +1428,8 @@ void CLEditFrame::CLEditCFmsg()
 void CLEditFrame::FromStage()
 {
 
+    start_s = clock();
+    action = "From Stage ";
 // get the file from a table :)
     LogFile << "From Stage " << std::endl;
 
@@ -1395,20 +1446,22 @@ void CLEditFrame::FromStage()
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " need TableName ");
         return;
     }
-// static
-    DB.DataBase = FirstParameter;
-    DB.TableName = SecondParameter;
-    DB.Initialize();
-// we are creating stuff with the "new" keyword here - so we need to delete when not in use
+
 // the next three lines are the equivalent of an "open"
 // create a driver object
-    DB.Driver();
-
 // create a connection object
-    DB.Connect();
-
 // create a statement object
-    DB.Statement();
+    DB.DataBase = FirstParameter;
+    DB.TableName = SecondParameter;
+    res = DB.Bind();
+
+    if (res != 0)
+    {
+        LoadScreen();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " failed " + to_string(res));
+        WipeCommand();
+        return;
+    }
 
     rowcnt = DB.Count();
 
@@ -1419,7 +1472,8 @@ void CLEditFrame::FromStage()
         FileSizeError = true;
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " file too big ");
         haveaFile = false;
-        goto ExitFromStage;
+        DB.Free();
+        return;
     }
 
     if  (rowcnt == 0)
@@ -1427,7 +1481,8 @@ void CLEditFrame::FromStage()
         haveaFile = false;
         wfilecnt = 0;
         wxLogStatus(PrimaryCommand + " " + FirstParameter + " " + SecondParameter + " not found");
-        goto ExitFromStage;
+        DB.Free();
+        return;
     }
 
     haveaFile = true;
@@ -1440,6 +1495,8 @@ void CLEditFrame::FromStage()
     DB.Cursor();
 
     DB.FromStage();
+// "close" the database
+    DB.Free();
 
     for (i = 0; i < rowcnt; i++)
     {
@@ -1448,6 +1505,7 @@ void CLEditFrame::FromStage()
         winputfile[i].wIFCode = DB.inputfile[i].IFCode;
         GetEndl();
     }
+
     frstl = 1;
 
     LoadScreen();
@@ -1458,13 +1516,16 @@ void CLEditFrame::FromStage()
 
     WipeCommand();
 
-ExitFromStage:
-// "close" the database
-    DB.Free();
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::ToStage()
 {
+
+    start_s = clock();
+    action = "To Stage ";
 // save the file to a Table :)
     LogFile << "To Stage " << std::endl;
 
@@ -1485,26 +1546,28 @@ void CLEditFrame::ToStage()
         wxLogStatus(PrimaryCommand + " no data to stage  ");
         return;
     }
-// static
-    DB.DataBase = FirstParameter;
-    DB.TableName = SecondParameter;
-    DB.Initialize();
 
-// we are creating stuff with the "new" keyword here - so we need to delete when not in use
-// the next three lines are the equivalent of an "open"
-// create a driver object
-    DB.Driver();
-
-// create a connection object
-    DB.Connect();
-
-// create a statement object
-    DB.Statement();
 
     if (wfilecnt > 23000)
     {
         FileSizeError = true;
         wxLogStatus(PrimaryCommand + " file too big ");
+        return;
+    }
+
+// the next three lines are the equivalent of an "open"
+// create a driver object
+// create a connection object
+// create a statement object
+    DB.DataBase = FirstParameter;
+    DB.TableName = SecondParameter;
+    res = DB.Bind();
+
+    if (res != 0)
+    {
+        LoadScreen();
+        wxLogStatus(PrimaryCommand + " " + FirstParameter + SecondParameter + " failed " + to_string(res));
+        WipeCommand();
         return;
     }
 
@@ -1536,6 +1599,10 @@ void CLEditFrame::ToStage()
     wxLogStatus(PrimaryCommand + FirstParameter + SecondParameter + " applied");
 
     WipeCommand();
+
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::SortSM()
@@ -1595,7 +1662,7 @@ void CLEditFrame::SortSM()
 void CLEditFrame::SortArea()
 {
 
-    if (i == 1)
+    if (i == 0)
     {
         LogFile << "SortArea " << std::endl;
     }
@@ -4219,11 +4286,11 @@ void CLEditFrame::InitCF()
 
     LogFile << "Init CF File " << std::endl;
 // file to or from file functions
-    CF->inputfile[0].IFCode = "";    // Code string
+    CF.inputfile[0].IFCode = "";    // Code string
 
     for (i = 1; i < 25000; i++)
     {
-        CF->inputfile[i] = CF->inputfile[0];
+        CF.inputfile[i] = CF.inputfile[0];
     }
 
 }
@@ -4553,3 +4620,92 @@ void CLEditFrame::CreateControls()
     Return = true;  // not the C++ return, a wx 'return' yuck
 
 }
+void CLEditFrame::OpenLog()
+{
+
+    LogFile.open("CLEditLog.txt", std::ios::out | ios_base::app);
+
+    if  (!LogFile.is_open())
+    {
+        ReturnFunction = "Open Log ";
+        ReturnCode = "3502 ";
+        ReturnMessage = " Log File Open error ";
+        OnTerminal();
+    }
+
+    bytecnt = LogFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseLog();
+        OpenLogn();
+    }
+
+    LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+
+}
+void CLEditFrame::OpenLogn()
+{
+
+    LogFile.open("CLEditLog.txt", std::ios::out);
+
+    if  (!LogFile.is_open())
+    {
+        ReturnFunction = "Open Log New ";
+        ReturnCode = "3503 ";
+        ReturnMessage = " Log File Open error ";
+        OnTerminal();
+    }
+
+}
+void CLEditFrame::CloseLog()
+{
+
+    LogFile.close();
+
+}
+void CLEditFrame::OpenErr()
+{
+
+    ErrFile.open("CLEditErr.txt", std::ios::out | ios_base::app);
+
+    if  (!ErrFile.is_open())
+    {
+        ReturnFunction = "Open Error ";
+        ReturnCode = "3504 ";
+        ReturnMessage = " Error File Open error ";
+        OnTerminal();
+    }
+
+    bytecnt = ErrFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseErr();
+        OpenErrn();
+    }
+
+    LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+
+}
+void CLEditFrame::OpenErrn()
+{
+
+    ErrFile.open("CLEditErr.txt", std::ios::out);
+
+    if  (!ErrFile.is_open())
+    {
+        ReturnFunction = "Open Error new ";
+        ReturnCode = "3505 ";
+        ReturnMessage = " Error File Open error ";
+        OnTerminal();
+    }
+
+}
+void CLEditFrame::CloseErr()
+{
+
+    ErrFile.close();
+
+}
+

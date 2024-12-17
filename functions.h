@@ -16,6 +16,12 @@ void InitDB();
 void InitFF();
 void InitTF();
 void InitXX();
+void OpenLog();
+void OpenLogn();
+void CloseLog();
+void OpenErr();
+void OpenErrn();
+void CloseErr();
 
 // f-key actions and or primary command actions
 void Find();

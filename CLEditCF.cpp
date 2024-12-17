@@ -35,15 +35,19 @@ int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
 
     i = 0;  //used to track position
     j = 0;  //used for logical record length
+    fileireccnt = 0;
+    fileoreccnt = 0;
 
     readfir();
 
     while (fileitellg > 0)  // at end of file the read returns -1
     {
-        processfir();
+        processfircopy();
     }
 
     LogFile << "copy file " << std::endl;
+
+    action = "Copy File ";
 
     eop();
 
@@ -77,16 +81,21 @@ int CLEditCF::openfile(std::string fileiname)
 
     i = 0;  //used to track position
     j = 0;  //used for logical record length
-    Outreccnt = 0;
+    fileireccnt = 0;
+    Outreccnt = 0;  // index not counter
 
     readfir();
 
     while (fileitellg > 0)  // at end of file the read returns -1
     {
-        processfir();
+        processfiropen();
     }
 
     LogFile << "open file " << std::endl;
+
+    reccnt = fileireccnt;
+
+    action = "Open File ";
 
     eop();
 
@@ -112,7 +121,7 @@ int CLEditCF::savefile(std::string fileoname)
         goto saveexit;
     }
 
-    for (i = 0; i < fileoreccnt; i++)
+    for (i = 0; i < reccnt; i++)
     {
         stringtochar();
         writefor();
@@ -120,6 +129,8 @@ int CLEditCF::savefile(std::string fileoname)
     }
 
     LogFile << "save file " << std::endl;
+
+    action = "Save File ";
 
     eop();
 
@@ -130,10 +141,6 @@ saveexit:
 }
 void CLEditCF::eop()
 {
-
-    stop_s = clock();
-
-    LogFile << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
     LogFile << "File In Bytes " << fileibytecnt << std::endl;
 
@@ -147,9 +154,13 @@ void CLEditCF::eop()
 
     closefo();
 
-    closelog();
+    CloseErr();
 
-    closeerr();
+    stop_s = clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+
+    CloseLog();
 
 }
 void CLEditCF::stringtochar()
@@ -182,14 +193,14 @@ void CLEditCF::init()
 //  fileireccnt  = 0;  // no
 //  fileoreccnt  = 0;  // no
 
-    openlog();
+    OpenLog();
 
     if (abendi != 0)
     {
         return;
     }
 
-    openerr();
+    OpenErr();
 
     if (abendi != 0)
     {
@@ -218,7 +229,7 @@ void CLEditCF::openfo()
     if  (!fileo.is_open())
     {
         msg = "TO file Open error";
-        abendi = 3503;
+        abendi = 3500;
         ErrFile << msg << abendi << std::endl;
         return;
     }
@@ -249,7 +260,7 @@ void CLEditCF::openfi()
     if (fileoi > 2)
     {
         msg = "FROM file unavailable";
-        abendi = 3504;
+        abendi = 3501;
         ErrFile << msg << abendi << std::endl;
         return;
     }
@@ -262,7 +273,7 @@ void CLEditCF::openfi()
     if  (!filei.is_open())
     {
         msg = "FROM file Open error";
-        abendi = 3505;
+        abendi = 3502;
         ErrFile << msg << abendi << std::endl;
         return;
     }
@@ -274,7 +285,7 @@ void CLEditCF::closefi()
     filei.close();
 
 }
-void CLEditCF::processfir()
+void CLEditCF::processfiropen()
 {
 
     j++;
@@ -285,7 +296,8 @@ void CLEditCF::processfir()
 
     if  (fileic == '\n')
     {
-       processfor();
+        fileireccnt++;
+        processforopen();
     }
 
     readfir();
@@ -302,7 +314,8 @@ void CLEditCF::processfircopy()
 
     if  (fileic == '\n')
     {
-       processforcopy();
+        fileireccnt++;
+        processforcopy();
     }
 
     readfir();
@@ -321,10 +334,8 @@ void CLEditCF::readfir()
     }
 
 }
-void CLEditCF::processfor()
+void CLEditCF::processforopen()
 {
-
-    fileireccnt++;
 
     inputfile[Outreccnt].IFCode = fileir;
 
@@ -346,7 +357,7 @@ void CLEditCF::writefor()
 
     fileo << fileir;
 
-    fileireccnt++;
+    fileoreccnt++;
 
 }
 void CLEditCF::initfileir()
@@ -370,38 +381,87 @@ void CLEditCF::initsavefileir()
     }
 
 }
-void CLEditCF::openlog()
+void CLEditCF::OpenLog()
 {
 
-    LogFile.open("CLEditCFLogFile.txt", std::ios::out);
+    LogFile.open("CLEditCFLogFile.txt", ios_base::out | ios_base::app);
 
     if  (!LogFile.is_open())
     {
         msg = "Log file Open error";
-        abendi = 3501;
+        abendi = 3503;
         std::cout << msg << abendi << std::endl;    // better than flying blind
         return;
     }
+
+    bytecnt = LogFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseLog();
+        OpenLogn();
+    }
+
+    LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+
 }
-void CLEditCF::closelog()
+void CLEditCF::OpenLogn()
+{
+
+    LogFile.open("CLEditCFLogFile.txt", ios_base::out);
+
+    if  (!LogFile.is_open())
+    {
+        msg = "Log file Open error";
+        abendi = 3504;
+        std::cout << msg << abendi << std::endl;    // better than flying blind
+        return;
+    }
+
+}
+void CLEditCF::CloseLog()
 {
 
     LogFile.close();
 
 }
-void CLEditCF::openerr()
+void CLEditCF::OpenErr()
 {
-    ErrFile.open("CLEditCFErrFile.txt", std::ios::out);
+    ErrFile.open("CLEditCFErrFile.txt", std::ios::out | ios_base::app);
 
     if  (!ErrFile.is_open())
     {
         msg = "Error file Open error";
-        abendi = 3502;
+        abendi = 3505;
         std::cout << msg << abendi << std::endl;   // better than flying blind
         return;
     }
+
+    bytecnt = ErrFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseErr();
+        OpenErrn();
+    }
+
+    LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+
 }
-void CLEditCF::closeerr()
+void CLEditCF::OpenErrn()
+{
+    ErrFile.open("CLEditCFErrFile.txt", std::ios::out | ios_base::app);
+
+    if  (!ErrFile.is_open())
+    {
+        msg = "Error file Open error";
+        abendi = 3506;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+}
+void CLEditCF::CloseErr()
 {
 
     ErrFile.close();
