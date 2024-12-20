@@ -13,28 +13,28 @@ int CLEditDB::Bind()
 
     Initialize();
 
-    if  (abendi != 0)
+    if  (abend)
     {
         return abendi;
     }
 
     Driver();
 
-    if  (abendi != 0)
+    if  (abend)
     {
         return abendi;
     }
 
     Connect();
 
-    if  (abendi != 0)
+    if  (abend)
     {
         return abendi;
     }
 
     Statement();
 
-    if  (abendi != 0)
+    if  (abend)
     {
         return abendi;
     }
@@ -71,6 +71,7 @@ void CLEditDB::Driver()
         state = e.getSQLState();
         Error();
         abendi = 3500;
+        abend = true;
     }
 
 }
@@ -91,6 +92,7 @@ void CLEditDB::Connect()
         state = e.getSQLState();
         Error();
         abendi = 3501;
+        abend = true;
     }
 
 }
@@ -110,15 +112,20 @@ void CLEditDB::Statement()
         state = e.getSQLState();
         Error();
         abendi = 3502;
+        abend = true;
     }
 
 }
 int CLEditDB::Count()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
 
-    LogFile << "Count(*) " << std::endl;
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
+
+    LogFile << "Count(*) " << DataBase << " " << TableName << std::endl;
 
     try
     {
@@ -145,9 +152,10 @@ int CLEditDB::Count()
         state = e.getSQLState();
         Error();
         abendi = 3503;
+        abend = true;
     }
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     action = "Count ";
 
@@ -159,9 +167,13 @@ int CLEditDB::Count()
 void CLEditDB::Cursor()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
 
-    LogFile << "Cursor " << std::endl;
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
+
+    LogFile << "Cursor " << DataBase << " " << TableName << std::endl;
 
     try
     {
@@ -180,9 +192,10 @@ void CLEditDB::Cursor()
         state = e.getSQLState();
         Error();
         abendi = 3504;
+        abend = true;
     }
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     action = "Cursor ";
 
@@ -205,9 +218,13 @@ void CLEditDB::InitInputFile()
 void CLEditDB::ToStage()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
 
-    LogFile << "To Stage " << std::endl;
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
+
+    LogFile << "To Stage " << DataBase << " " << TableName << std::endl;
 
     UseDb();
 
@@ -221,7 +238,7 @@ void CLEditDB::ToStage()
         InsertRow();
     }
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     action = "To Stage ";
 
@@ -248,6 +265,7 @@ void CLEditDB::UseDb()
         state = e.getSQLState();
         Error();
         abendi = 3505;
+        abend = true;
     }
 
 }
@@ -270,6 +288,7 @@ void CLEditDB::DropTable()
         state = e.getSQLState();
         Error();
         abendi = 3506;
+        abend = true;
     }
 
 }
@@ -293,6 +312,7 @@ void CLEditDB::CreateTable()
         state = e.getSQLState();
         Error();
         abendi = 3507;
+        abend = true;
     }
 
 }
@@ -334,6 +354,7 @@ void CLEditDB::InsertRow()
         state = e.getSQLState();
         Error();
         abendi = 3508;
+        abend = true;
     }
 
 }
@@ -356,9 +377,13 @@ void CLEditDB::FixQuote()
 void CLEditDB::FromStage()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
 
-    LogFile << "From Stage " << std::endl;
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
+
+    LogFile << "From Stage " << DataBase << " " << TableName << std::endl;
 
     InitInputFile();
 
@@ -382,9 +407,10 @@ void CLEditDB::FromStage()
         state = e.getSQLState();
         Error();
         abendi = 3509;
+        abend = true;
     }
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     action = "From Stage ";
 
@@ -425,6 +451,7 @@ void CLEditDB::Freecon()
         state = e.getSQLState();
         Error();
         abendi = 3510;
+        abend = true;
     }
 
 }
@@ -444,6 +471,7 @@ void CLEditDB::Freestmt()
         state = e.getSQLState();
         Error();
         abendi = 3511;
+        abend = true;
     }
 
 }
@@ -463,6 +491,7 @@ void CLEditDB::Freepstmt()
         state = e.getSQLState();
         Error();
         abendi = 3512;
+        abend = true;
     }
 
 }
@@ -482,6 +511,7 @@ void CLEditDB::Freeres()
         state = e.getSQLState();
         Error();
         abendi = 3513;
+        abend = true;
     }
 
 }
@@ -511,6 +541,7 @@ void CLEditDB::OpenLog()
     {
         msg = "Log file Open error";
         abendi = 3514;
+        abend = true;
         std::cout << msg << abendi << std::endl;    // better than flying blind
         return;
     }
@@ -535,6 +566,7 @@ void CLEditDB::OpenLogn()
     {
         msg = "Log file Open error";
         abendi = 3515;
+        abend = true;
         std::cout << msg << abendi << std::endl;    // better than flying blind
         return;
     }
@@ -554,6 +586,7 @@ void CLEditDB::OpenErr()
     {
         msg = "Error file Open error";
         abendi = 3516;
+        abend = true;
         std::cout << msg << abendi << std::endl;   // better than flying blind
         return;
     }
@@ -577,6 +610,7 @@ void CLEditDB::OpenErrn()
     {
         msg = "Error file Open error";
         abendi = 3517;
+        abend = true;
         std::cout << msg << abendi << std::endl;   // better than flying blind
         return;
     }

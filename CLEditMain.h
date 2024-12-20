@@ -2,6 +2,8 @@
 #include "CLEditCF.h"
 #include "CLEditDB.h"
 #include "CLEditSM.h"
+#include "CLEditRP.h"
+#include "CLEditAR.h"
 #include <wx/wx.h>
 #include <iostream>
 #include <iomanip>
@@ -9,6 +11,8 @@
 #include <string>
 #include <algorithm>
 #include <ctype.h>
+#include <pwd.h>
+#include <chrono>
 #define FILE_SIZE 102400
 using namespace std;
 class CLEditFrame : public wxFrame

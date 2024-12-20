@@ -24,6 +24,7 @@ void OpenErrn();
 void CloseErr();
 
 // f-key actions and or primary command actions
+void Report();
 void Find();
 void FindNext();
 void Bottom();

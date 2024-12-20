@@ -14,6 +14,10 @@ CLEditFrame::CLEditFrame(const wxString & title)
           ,wxDEFAULT_FRAME_STYLE & ~(wxRESIZE_BORDER | wxMAXIMIZE_BOX))
 {
 
+    username = geteuid();
+    password = getpwuid(username);
+    userid   = password->pw_name;
+
     OpenLog();
 
     OpenErr();
@@ -595,6 +599,13 @@ void CLEditFrame::OnApplyClicked(wxCommandEvent & event)
     }
 
 //create a file - or stage to a table - from a block copy
+    if (PrimaryCommand == "report")
+    {
+        Report();
+        goto ExitOnApplyClicked;
+    }
+
+//create a file - or stage to a table - from a block copy
     if (PrimaryCommand == "create")
     {
         Create();
@@ -887,6 +898,36 @@ void CLEditFrame::OnTerminal()
     exit(9999);
 
 }
+void CLEditFrame::Report()
+{
+
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
+
+    action = "Report ";
+
+    LogFile << "Report " << std::endl;
+
+    InitScreen();
+
+    res = RP.Report();
+
+    frstl = 1;
+
+    LoadScreen();
+
+    wxLogStatus(PrimaryCommand + " applied ");
+
+    WipeCommand();
+
+    stop_s = std::clock();
+
+    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+
+}
 void CLEditFrame::Create()
 {
 
@@ -927,7 +968,11 @@ ExitCreate:
 void CLEditFrame::CreateFile()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "Create File ";
 
     LogFile << "Create File" << std::endl;   // need a block copy and file name
@@ -967,7 +1012,7 @@ ExitCreateFile:
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1005,7 +1050,11 @@ void CLEditFrame::SetEndl()
 void CLEditFrame::CreateTable()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "Create Table ";
 
     LogFile << "Create Table" << std::endl;   // need a block copy and file name
@@ -1048,7 +1097,7 @@ void CLEditFrame::CreateTable()
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1056,7 +1105,11 @@ void CLEditFrame::CreateTable()
 void CLEditFrame::SaveFile()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "Save File ";
 
     LogFile << "Save File " << std::endl;
@@ -1107,7 +1160,7 @@ ExitSaveFile:
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1129,7 +1182,11 @@ void CLEditFrame::TrimFile()
 void CLEditFrame::SaveAsFile()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "Save As File ";
 
     LogFile << "SaveAs " << std::endl;
@@ -1177,7 +1234,7 @@ ExitSaveAsFile:
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1238,7 +1295,15 @@ void CLEditFrame::eXclude()
 void CLEditFrame::OpenFile()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    res = AR.ActReact();
+
+    WorkStr = AR.DateSeq.date;
+
+    start_s = std::clock();
     action = "Open File ";
 
     LogFile << "Open File " << std::endl;
@@ -1301,7 +1366,7 @@ ExitOpenFile:
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1365,7 +1430,11 @@ void CLEditFrame::GetEndl()
 void CLEditFrame::CopyFile()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "Copy File ";
 
     LogFile << "Copy File " << std::endl;
@@ -1401,7 +1470,7 @@ void CLEditFrame::CopyFile()
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1428,7 +1497,11 @@ void CLEditFrame::CLEditCFmsg()
 void CLEditFrame::FromStage()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "From Stage ";
 // get the file from a table :)
     LogFile << "From Stage " << std::endl;
@@ -1516,7 +1589,7 @@ void CLEditFrame::FromStage()
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1524,7 +1597,11 @@ void CLEditFrame::FromStage()
 void CLEditFrame::ToStage()
 {
 
-    start_s = clock();
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+
+    start_s = std::clock();
     action = "To Stage ";
 // save the file to a Table :)
     LogFile << "To Stage " << std::endl;
@@ -1600,7 +1677,7 @@ void CLEditFrame::ToStage()
 
     WipeCommand();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -1778,6 +1855,10 @@ std::string CLEditFrame::ToString(int u)
 }
 void CLEditFrame::ProcessScreen()
 {
+
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
 
     LogFile << "Process Screen " << std::endl;
 // capture everything from the screen

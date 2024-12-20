@@ -1,6 +1,14 @@
 // variables
 // characters
+
 char Byte;          // do nothing - like a continue *here
+
+std::time_t currentdatetime;
+
+passwd * password;
+uid_t username;
+std::string userid;
+
 int bytecnt;        // bytes in a file
 int start_s;
 int stop_s;

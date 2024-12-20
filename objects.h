@@ -13,3 +13,11 @@ CLEditDB DB;
 // SORT
 // this is an instance of a class to SORT the current file
 CLEditSM SM;
+
+// report
+// this is an instance of a class to produce a report
+CLEditRP RP;
+
+// key value for reporting
+// this is an instance of a class to get a key value
+CLEditAR AR;

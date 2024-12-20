@@ -5,6 +5,7 @@
 #include <cstring>
 #include <ctime>
 #include <ctype.h>
+#include <chrono>
 #define FILE_SIZE 102400
 using namespace std;
 class CLEditCF
@@ -39,6 +40,8 @@ class CLEditCF
         std::fstream ErrFile;
         std::fstream filei;
         std::fstream fileo;
+
+        std::time_t currentdatetime;
 
         int bytecnt;        // bytes in a file
         int fileireccnt;

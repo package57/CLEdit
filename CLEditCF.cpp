@@ -14,21 +14,23 @@ int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
 
     init();
 
-    if (abendi != 0)
+    LogFile << "Copy File " << fileiname << " " << fileoname << std::endl;
+
+    if (abend)
     {
         goto copyexit;
     }
 
     openfo();
 
-    if (abendi != 0)
+    if (abend)
     {
         goto copyexit;
     }
 
     openfi();
 
-    if (abendi != 0)
+    if (abend)
     {
         goto copyexit;
     }
@@ -45,8 +47,6 @@ int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
         processfircopy();
     }
 
-    LogFile << "copy file " << std::endl;
-
     action = "Copy File ";
 
     eop();
@@ -61,14 +61,16 @@ int CLEditCF::openfile(std::string fileiname)
 
     init();
 
-    if (abendi != 0)
+    LogFile << "Open File " << fileiname << std::endl;
+
+    if (abend)
     {
         goto openexit;
     }
 
     openfi();
 
-    if (abendi != 0)
+    if (abend)
     {
         goto openexit;
     }
@@ -91,8 +93,6 @@ int CLEditCF::openfile(std::string fileiname)
         processfiropen();
     }
 
-    LogFile << "open file " << std::endl;
-
     reccnt = fileireccnt;
 
     action = "Open File ";
@@ -109,14 +109,16 @@ int CLEditCF::savefile(std::string fileoname)
 
     init();
 
-    if (abendi != 0)
+    LogFile << "Save File " << fileoname << std::endl;
+
+    if (abend)
     {
         goto saveexit;
     }
 
     openfo();
 
-    if (abendi != 0)
+    if (abend)
     {
         goto saveexit;
     }
@@ -127,8 +129,6 @@ int CLEditCF::savefile(std::string fileoname)
         writefor();
         initsavefileir();
     }
-
-    LogFile << "save file " << std::endl;
 
     action = "Save File ";
 
@@ -156,7 +156,7 @@ void CLEditCF::eop()
 
     CloseErr();
 
-    stop_s = clock();
+    stop_s = std::clock();
 
     LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
@@ -186,7 +186,7 @@ void CLEditCF::stringtochar()
 void CLEditCF::init()
 {
 
-    start_s = clock();
+    start_s = std::clock();
 
     fileibytecnt = 0;
     fileobytecnt = 0;
@@ -195,23 +195,23 @@ void CLEditCF::init()
 
     OpenLog();
 
-    if (abendi != 0)
-    {
-        return;
-    }
-
-    OpenErr();
-
-    if (abendi != 0)
+    if (abend)
     {
         return;
     }
 
     LogFile << "init " << std::endl;
 
-    std::time_t currentdatetime = std::time(nullptr);
+    currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(&currentdatetime) << std::endl;
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    OpenErr();
+
+    if (abend)
+    {
+        return;
+    }
 
     for (l = 0; l < 253; l++)
     {
@@ -230,6 +230,7 @@ void CLEditCF::openfo()
     {
         msg = "TO file Open error";
         abendi = 3500;
+        abend = true;
         ErrFile << msg << abendi << std::endl;
         return;
     }
@@ -261,6 +262,7 @@ void CLEditCF::openfi()
     {
         msg = "FROM file unavailable";
         abendi = 3501;
+        abend = true;
         ErrFile << msg << abendi << std::endl;
         return;
     }
@@ -274,6 +276,7 @@ void CLEditCF::openfi()
     {
         msg = "FROM file Open error";
         abendi = 3502;
+        abend = true;
         ErrFile << msg << abendi << std::endl;
         return;
     }
@@ -390,6 +393,7 @@ void CLEditCF::OpenLog()
     {
         msg = "Log file Open error";
         abendi = 3503;
+        abend = true;
         std::cout << msg << abendi << std::endl;    // better than flying blind
         return;
     }
@@ -414,6 +418,7 @@ void CLEditCF::OpenLogn()
     {
         msg = "Log file Open error";
         abendi = 3504;
+        abend = true;
         std::cout << msg << abendi << std::endl;    // better than flying blind
         return;
     }
@@ -433,6 +438,7 @@ void CLEditCF::OpenErr()
     {
         msg = "Error file Open error";
         abendi = 3505;
+        abend = true;
         std::cout << msg << abendi << std::endl;   // better than flying blind
         return;
     }
@@ -450,12 +456,13 @@ void CLEditCF::OpenErr()
 }
 void CLEditCF::OpenErrn()
 {
-    ErrFile.open("CLEditCFErrFile.txt", std::ios::out | ios_base::app);
+    ErrFile.open("CLEditCFErrFile.txt", std::ios::out);
 
     if  (!ErrFile.is_open())
     {
         msg = "Error file Open error";
         abendi = 3506;
+        abend = true;
         std::cout << msg << abendi << std::endl;   // better than flying blind
         return;
     }

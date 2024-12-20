@@ -6,6 +6,7 @@
 #include <ctime>
 #include <ctype.h>
 #include <sstream>
+#include <chrono>
 
 #include "mysql.h"
 #include "mysql_driver.h"
@@ -55,6 +56,8 @@ class CLEditDB
         sql::PreparedStatement * pstmt;
         sql::ResultSet * res;
 
+        std::time_t currentdatetime;
+
         int start_s;
         int stop_s;
         int abendi;
@@ -62,7 +65,9 @@ class CLEditDB
         int u;
         int i;
         int n;
+
         bool OnOne;
+        bool abend;
 
         std::string what;
         std::string state;
