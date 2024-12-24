@@ -21,8 +21,53 @@ int CLEditRP::Report()
 
     LogFile << "Report " << std::endl;
 
+// the log files roll over at different rates
+// the Main log file contains actions other than
+// file actions or database actions
+// process Main log file, create anchor points
+// open Main log file for input
+// read byte by byte
+// process until end of file, aka eof
+// close Main log file
+// process CF log file, connect to anchor point
+// open Main log file for input
+// read byte by byte
+// process until end of file, aka eof
+// close Main log file
+// process DB log file, connect to anchor point
+// open Main log file for input
+// read byte by byte
+// process until end of file, aka eof
+// close Main log file
 
-//  do stuff here
+//  Main
+/*
+Welcome pierre Sat Dec 21 06:54:11 2024
+Command open
+Parameter one objects.h
+Usage Date 20241221 0000000001
+Open File
+Open File elapsed time: 11.565
+*/
+// CF
+/*
+Welcome Sat Dec 21 06:54:11 2024
+Open File objects.h
+Usage Date 20241221 0000000001
+File In Bytes 506
+File In Records 23
+Open File elapsed time: 1.101
+*/
+// DB
+/*
+Welcome pierre Sat Dec 21 06:54:26 2024
+Command fromstage
+Parameter one mydb
+Parameter two testones
+Usage Date 20241221 0000000002
+rows 1
+From Stage elapsed time: 22.44
+*/
 
 
     action = "Report ";

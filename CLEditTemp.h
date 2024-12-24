@@ -1,3 +1,7 @@
+#ifndef CLEDITTEMP_H
+#define CLEDITTEMP_H
+
+#include "CLEditXETL.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -6,7 +10,8 @@
 #include <ctime>
 #include <ctype.h>
 #include <chrono>
-#define FILE_SIZE 102400
+#define FILE_SIZE 1000
+//#define FILE_SIZE 102400
 using namespace std;
 class CLEditTemp
 {
@@ -20,6 +25,8 @@ class CLEditTemp
     protected:
 
     private:
+
+        CLEditXETL ETL;
 
         std::fstream LogFile;
         std::fstream ErrFile;
@@ -48,3 +55,5 @@ class CLEditTemp
         void eop();
 
 };
+
+#endif // CLEDITTEMP_H

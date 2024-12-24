@@ -1,5 +1,3 @@
-#include <iostream>
-#include <wx/wx.h>
 #include "CLEditMain.h"
 using namespace std;
 wxBEGIN_EVENT_TABLE(CLEditFrame, wxFrame)
@@ -768,8 +766,11 @@ ExitOnApplyClicked:
 
 }
 void CLEditFrame::FindPrimary()
-{      LogFile << "Find Primary ";
-     for (i = 0; i < Commandl; i++)
+{
+
+    LogFile << "Find Primary ";
+
+    for (i = 0; i < Commandl; i++)
     {
         if  (Commandstr[i] == ' ')
         {
@@ -903,7 +904,27 @@ void CLEditFrame::Report()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command Report" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
 
@@ -925,7 +946,7 @@ void CLEditFrame::Report()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::Create()
@@ -970,7 +991,27 @@ void CLEditFrame::CreateFile()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command CreateFile" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "Create File ";
@@ -996,6 +1037,9 @@ void CLEditFrame::CreateFile()
 
     CF.fileoname = FirstParameter;
     CF.reccnt = CCrows;
+    CF.DateSeq.date = DateSeq.date;
+    CF.DateSeq.seq = DateSeq.seq;
+    CF.Mode = "createfile";
     CLEditCFrc = CF.savefile(CF.fileoname);
 
     if  (CLEditCFrc != 0)
@@ -1014,7 +1058,7 @@ ExitCreateFile:
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::SetEndl()
@@ -1050,12 +1094,31 @@ void CLEditFrame::SetEndl()
 void CLEditFrame::CreateTable()
 {
 
+    start_s = std::clock();
+
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command CreateTable" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
 
-    start_s = std::clock();
-    action = "Create Table ";
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     LogFile << "Create Table" << std::endl;   // need a block copy and file name
 
@@ -1065,6 +1128,8 @@ void CLEditFrame::CreateTable()
 // create a statement object
     DB.DataBase = FirstParameter;
     DB.TableName = SecondParameter;
+    DB.DateSeq.date = DateSeq.date;
+    DB.DateSeq.seq = DateSeq.seq;
     res = DB.Bind();
 
     if (res != 0)
@@ -1085,7 +1150,7 @@ void CLEditFrame::CreateTable()
     }
 
     DB.rowcnt = CCrows;
-
+    DB.Mode = "createtable";
     DB.ToStage();
 
 // close
@@ -1099,7 +1164,9 @@ void CLEditFrame::CreateTable()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    action = "Create Table ";
+
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::SaveFile()
@@ -1107,7 +1174,27 @@ void CLEditFrame::SaveFile()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command SaveFile" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "Save File ";
@@ -1144,6 +1231,9 @@ void CLEditFrame::SaveFile()
 
     CF.fileoname = CurrentFile;
     CF.reccnt = wfilecnt;
+    CF.DateSeq.date = DateSeq.date;
+    CF.DateSeq.seq = DateSeq.seq;
+    CF.Mode = "savefile";
     CLEditCFrc = CF.savefile(CF.fileoname);
 
     if  (CLEditCFrc != 0)
@@ -1162,7 +1252,7 @@ ExitSaveFile:
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::TrimFile()
@@ -1184,7 +1274,27 @@ void CLEditFrame::SaveAsFile()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command SaveAsFile" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "Save As File ";
@@ -1218,6 +1328,9 @@ void CLEditFrame::SaveAsFile()
 
     CF.fileoname = CurrentFile;
     CF.reccnt = wfilecnt;
+    CF.DateSeq.date = DateSeq.date;
+    CF.DateSeq.seq = DateSeq.seq;
+    CF.Mode = "saveasfile";
     CLEditCFrc = CF.savefile(CF.fileoname);
 
     if  (CLEditCFrc != 0)
@@ -1236,7 +1349,7 @@ ExitSaveAsFile:
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::Exit()
@@ -1297,11 +1410,27 @@ void CLEditFrame::OpenFile()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command OpenFile" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
 
     res = AR.ActReact();
 
-    WorkStr = AR.DateSeq.date;
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "Open File ";
@@ -1319,8 +1448,10 @@ void CLEditFrame::OpenFile()
 
     CurrentFile = FirstParameter;
     CF.fileiname = FirstParameter;
-
+    CF.DateSeq.date = DateSeq.date;
+    CF.DateSeq.seq = DateSeq.seq;
 // import the file
+    CF.Mode = "openfile";
     CLEditCFrc = CF.openfile(CF.fileiname);
 
     if  (CLEditCFrc != 0)
@@ -1368,7 +1499,7 @@ ExitOpenFile:
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::PageofPage()
@@ -1432,7 +1563,27 @@ void CLEditFrame::CopyFile()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command CopyFile" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "Copy File ";
@@ -1457,6 +1608,9 @@ void CLEditFrame::CopyFile()
 
     CF.fileiname = FirstParameter;
     CF.fileoname = SecondParameter;
+    CF.DateSeq.date = DateSeq.date;
+    CF.DateSeq.seq = DateSeq.seq;
+    CF.Mode = "copyfile";
     CLEditCFrc = CF.copyfile(CF.fileiname, CF.fileoname);
 
     if  (CLEditCFrc != 0)
@@ -1472,7 +1626,7 @@ void CLEditFrame::CopyFile()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::CLEditCFmsg()
@@ -1499,7 +1653,27 @@ void CLEditFrame::FromStage()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command FromStage" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "From Stage ";
@@ -1526,6 +1700,8 @@ void CLEditFrame::FromStage()
 // create a statement object
     DB.DataBase = FirstParameter;
     DB.TableName = SecondParameter;
+    DB.DateSeq.date = DateSeq.date;
+    DB.DateSeq.seq = DateSeq.seq;
     res = DB.Bind();
 
     if (res != 0)
@@ -1567,6 +1743,7 @@ void CLEditFrame::FromStage()
 
     DB.Cursor();
 
+    DB.Mode = "fromstage";
     DB.FromStage();
 // "close" the database
     DB.Free();
@@ -1591,7 +1768,7 @@ void CLEditFrame::FromStage()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::ToStage()
@@ -1599,7 +1776,27 @@ void CLEditFrame::ToStage()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command ToStage" << std::endl;
+    LogFile << "Parameterone " << FirstParameter << std::endl;
+    LogFile << "Parametertwo " << SecondParameter << std::endl;
+    LogFile << "ParameterIII " << ThirdParameter << std::endl;
+
+    res = AR.ActReact();
+
+    if (res != 0)
+    {
+        DateSeq.date = "boomboom";
+        DateSeq.seq  = "9999999999";
+    }
+    else
+    {
+        DateSeq.date = AR.DateSeq.date;
+        DateSeq.seq  = AR.DateSeq.seq;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     start_s = std::clock();
     action = "To Stage ";
@@ -1638,6 +1835,8 @@ void CLEditFrame::ToStage()
 // create a statement object
     DB.DataBase = FirstParameter;
     DB.TableName = SecondParameter;
+    DB.DateSeq.date = DateSeq.date;
+    DB.DateSeq.seq = DateSeq.seq;
     res = DB.Bind();
 
     if (res != 0)
@@ -1666,6 +1865,7 @@ void CLEditFrame::ToStage()
 
     DB.rowcnt = wfilecnt;
 
+    DB.Mode = "tostage";
     DB.ToStage();
 
  // "close" the database
@@ -1679,7 +1879,7 @@ void CLEditFrame::ToStage()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditFrame::SortSM()
@@ -1858,7 +2058,9 @@ void CLEditFrame::ProcessScreen()
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << userid << " " << std::ctime(& currentdatetime);
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    LogFile << "User " << userid << std::endl;
+    LogFile << "Command Process" << std::endl;
 
     LogFile << "Process Screen " << std::endl;
 // capture everything from the screen
@@ -4719,6 +4921,8 @@ void CLEditFrame::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
+        ETL.fileiname = "CLEditLog.txt";
+        rc = ETL.ETL();
         OpenLogn();
     }
 

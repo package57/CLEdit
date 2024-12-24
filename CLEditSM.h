@@ -1,3 +1,6 @@
+#ifndef CLEDITSM_H
+#define CLEDITAM_H
+
 #include <string>
 class CLEditSM
 {
@@ -34,3 +37,5 @@ class CLEditSM
         void LoopLoop();
 
 };
+
+#endif // CLEDITSM_H

@@ -1,3 +1,7 @@
+#ifndef CLEDITCF_H
+#define CLEDITCF_H
+
+#include "CLEditXETL.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -6,7 +10,8 @@
 #include <ctime>
 #include <ctype.h>
 #include <chrono>
-#define FILE_SIZE 102400
+#define FILE_SIZE 1000
+//#define FILE_SIZE 102400
 using namespace std;
 class CLEditCF
 {
@@ -15,8 +20,19 @@ class CLEditCF
         CLEditCF();
         virtual ~CLEditCF();
 
+// gather log data
+        CLEditXETL ETL;
+
+        struct dateseq
+        {
+            std::string date;
+            std::string seq;
+        };
+        dateseq DateSeq;
+
         std::string fileiname;
         std::string fileoname;
+        std::string Mode;       // save, saveas, create
 
         int reccnt;
 
@@ -43,6 +59,7 @@ class CLEditCF
 
         std::time_t currentdatetime;
 
+        int rc;
         int bytecnt;        // bytes in a file
         int fileireccnt;
         int fileibytecnt;
@@ -70,7 +87,6 @@ class CLEditCF
 
         std::string str;
         std::string msg;
-        std::string action;
 
         bool abend;
 
@@ -99,3 +115,5 @@ class CLEditCF
         void eop();
 
 };
+
+#endif // CLEDITCF_H

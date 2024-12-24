@@ -1,3 +1,6 @@
+#ifndef CLEDITAR_H
+#define CLEDITAR_H
+
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -6,7 +9,9 @@
 #include <ctime>
 #include <ctype.h>
 #include <chrono>
-#define FILE_SIZE 102400
+#include <iomanip>
+#define FILE_SIZE 1000
+//#define FILE_SIZE 102400
 using namespace std;
 class CLEditAR
 {
@@ -34,18 +39,24 @@ class CLEditAR
 
         std::time_t currentdatetime;
 
-        time_t timestamp;
-        /* struct */  tm datetime;
-
-        int bytecnt;
+        std::time_t timestamp;
+/* struct */  tm datetime;
 
         int start_s;
         int stop_s;
         int abendi;
+        int bytecnt;
+        int lrecl;
+        char fileic;
+        int i;
+        int j;
+        int seq;
+        char Actrec[19];
 
         std::string str;
         std::string msg;
         std::string action;
+        std::string ToString(int);
         dateseq CurrentAR;
         dateseq NewAR;
 
@@ -68,5 +79,10 @@ class CLEditAR
 		void OpenO();
 		void Write();
         void NewFile();
+        void DateMatch();
+        void FormatRec();
+
 
 };
+
+#endif // CLEDITAR_H

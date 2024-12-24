@@ -1,3 +1,7 @@
+#ifndef CLEDITDB_H
+#define CLEDITDB_H
+
+#include "CLEditXETL.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -17,7 +21,8 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
-#define FILE_SIZE 102400
+#define FILE_SIZE 1000
+//#define FILE_SIZE 102400
 using namespace std;
 class CLEditDB
 {
@@ -26,8 +31,19 @@ class CLEditDB
         CLEditDB();
         virtual ~CLEditDB();
 
+// gather log data
+        CLEditXETL ETL;
+
+        struct dateseq
+        {
+            std::string date;
+            std::string seq;
+        };
+        dateseq DateSeq;
+
         std::string DataBase;
         std::string TableName;
+        std::string Mode;       // create or load
 
         int rowcnt;
 
@@ -58,6 +74,7 @@ class CLEditDB
 
         std::time_t currentdatetime;
 
+        int rc;
         int start_s;
         int stop_s;
         int abendi;
@@ -86,7 +103,6 @@ class CLEditDB
         int bytecnt;        // bytes in a file
 
         std::string msg;
-        std::string action;
 
         void Initialize();
         void Driver();
@@ -114,3 +130,5 @@ class CLEditDB
         void Freeres();
 
 };
+
+#endif // CLEDITDB_H

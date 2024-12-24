@@ -9,6 +9,7 @@ passwd * password;
 uid_t username;
 std::string userid;
 
+int rc;
 int bytecnt;        // bytes in a file
 int start_s;
 int stop_s;

@@ -39,6 +39,9 @@ void CLEditTemp::init()
 
     start_s = std::clock();
 
+    abend = false;
+    abendi = 0;
+
     OpenLog();
 
     if (abend)
@@ -79,7 +82,19 @@ void CLEditTemp::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
-        OpenLogn();
+        abendi = ETL.ETL();
+        if (abend)
+        {
+            msg = "Log file ETL error";
+            abendi = 3503;
+            abend = true;
+            std::cout << msg << abendi << std::endl;    // better than flying blind
+            return;
+        }
+        else
+        {
+            OpenLogn();
+        }
     }
 
     LogFile << "Log file size " << to_string(bytecnt) << std::endl;

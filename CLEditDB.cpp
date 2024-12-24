@@ -13,6 +13,8 @@ int CLEditDB::Bind()
 
     Initialize();
 
+    start_s = std::clock();
+
     if  (abend)
     {
         return abendi;
@@ -119,12 +121,6 @@ void CLEditDB::Statement()
 int CLEditDB::Count()
 {
 
-    currentdatetime = std::time(nullptr);
-
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
-
-    start_s = std::clock();
-
     LogFile << "Count(*) " << DataBase << " " << TableName << std::endl;
 
     try
@@ -155,23 +151,13 @@ int CLEditDB::Count()
         abend = true;
     }
 
-    stop_s = std::clock();
-
-    action = "Count ";
-
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Count(*) " << to_string(rowcnt) << std::endl;
 
     return rowcnt;
 
 }
 void CLEditDB::Cursor()
 {
-
-    currentdatetime = std::time(nullptr);
-
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
-
-    start_s = std::clock();
 
     LogFile << "Cursor " << DataBase << " " << TableName << std::endl;
 
@@ -195,12 +181,6 @@ void CLEditDB::Cursor()
         abend = true;
     }
 
-    stop_s = std::clock();
-
-    action = "Cursor ";
-
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
-
 }
 void CLEditDB::InitInputFile()
 {
@@ -222,9 +202,17 @@ void CLEditDB::ToStage()
 
     LogFile << "Welcome " << std::ctime(& currentdatetime);
 
-    start_s = std::clock();
+    if (Mode == "tostage")
+    {
+        LogFile << "Command tostage " << DataBase << " " << TableName << std::endl;
+    }
 
-    LogFile << "To Stage " << DataBase << " " << TableName << std::endl;
+    if (Mode == "createtable")
+    {
+        LogFile << "Command createtable " << DataBase << " " << TableName << std::endl;
+    }
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     UseDb();
 
@@ -238,11 +226,11 @@ void CLEditDB::ToStage()
         InsertRow();
     }
 
+    LogFile << "RowCnt " << rowcnt << std::endl;
+
     stop_s = std::clock();
 
-    action = "To Stage ";
-
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::UseDb()
@@ -295,7 +283,7 @@ void CLEditDB::DropTable()
 void CLEditDB::CreateTable()
 {
 
-    LogFile << "Create Table " << std::endl;
+    LogFile << "CreateTable " << std::endl;
 
     try
     {
@@ -381,9 +369,11 @@ void CLEditDB::FromStage()
 
     LogFile << "Welcome " << std::ctime(& currentdatetime);
 
-    start_s = std::clock();
+//  start_s = std::clock();     moved to Bind(), FromStage() is Bind(), Count(), Cursor() and FromStage()
 
-    LogFile << "From Stage " << DataBase << " " << TableName << std::endl;
+    LogFile << "Command fromstage " << DataBase << " " << TableName << std::endl;
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     InitInputFile();
 
@@ -410,11 +400,11 @@ void CLEditDB::FromStage()
         abend = true;
     }
 
+    LogFile << "RowCnt " << rowcnt << std::endl;
+
     stop_s = std::clock();
 
-    action = "From Stage ";
-
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::Free()
@@ -551,6 +541,8 @@ void CLEditDB::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
+        ETL.fileiname = "CLEditLog.txt";
+        rc = ETL.ETL();
         OpenLogn();
     }
 

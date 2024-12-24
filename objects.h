@@ -21,3 +21,6 @@ CLEditRP RP;
 // key value for reporting
 // this is an instance of a class to get a key value
 CLEditAR AR;
+
+// gather log data
+CLEditXETL ETL;

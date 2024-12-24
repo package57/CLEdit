@@ -14,12 +14,18 @@ int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
 
     init();
 
-    LogFile << "Copy File " << fileiname << " " << fileoname << std::endl;
-
     if (abend)
     {
         goto copyexit;
     }
+
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    LogFile << "Command copyfile " << fileiname << " " << fileoname << std::endl;
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     openfo();
 
@@ -47,8 +53,6 @@ int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
         processfircopy();
     }
 
-    action = "Copy File ";
-
     eop();
 
 copyexit:
@@ -61,12 +65,18 @@ int CLEditCF::openfile(std::string fileiname)
 
     init();
 
-    LogFile << "Open File " << fileiname << std::endl;
-
     if (abend)
     {
         goto openexit;
     }
+
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    LogFile << "Command openfile " << fileiname << std::endl;
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     openfi();
 
@@ -95,8 +105,6 @@ int CLEditCF::openfile(std::string fileiname)
 
     reccnt = fileireccnt;
 
-    action = "Open File ";
-
     eop();
 
 openexit:
@@ -109,12 +117,32 @@ int CLEditCF::savefile(std::string fileoname)
 
     init();
 
-    LogFile << "Save File " << fileoname << std::endl;
-
     if (abend)
     {
         goto saveexit;
     }
+
+    currentdatetime = std::time(nullptr);
+
+    LogFile << "Welcome " << std::ctime(& currentdatetime);
+
+    if (Mode == "savefile")
+    {
+        LogFile << "Command savefile " << fileoname << std::endl;
+    }
+
+    if (Mode == "saveasfile")
+    {
+        LogFile << "Command saveasfile " << fileoname << std::endl;
+    }
+
+    if (Mode == "createfile")
+    {
+        LogFile << "Command createfile " << fileoname << std::endl;
+    }
+
+
+    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     openfo();
 
@@ -130,8 +158,6 @@ int CLEditCF::savefile(std::string fileoname)
         initsavefileir();
     }
 
-    action = "Save File ";
-
     eop();
 
 saveexit:
@@ -142,13 +168,13 @@ saveexit:
 void CLEditCF::eop()
 {
 
-    LogFile << "File In Bytes " << fileibytecnt << std::endl;
+    LogFile << "FileInBytes " << fileibytecnt << std::endl;
 
-    LogFile << "File In Records " << fileireccnt << std::endl;
+    LogFile << "FileInRecords " << fileireccnt << std::endl;
 
-    LogFile << "File Out Bytes " << fileobytecnt << std::endl;
+    LogFile << "FileOutBytes " << fileobytecnt << std::endl;
 
-    LogFile << "File Out Records " << fileoreccnt << std::endl;
+    LogFile << "FileOutRecords " << fileoreccnt << std::endl;
 
     closefi();
 
@@ -158,7 +184,7 @@ void CLEditCF::eop()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
     CloseLog();
 
@@ -201,10 +227,6 @@ void CLEditCF::init()
     }
 
     LogFile << "init " << std::endl;
-
-    currentdatetime = std::time(nullptr);
-
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
 
     OpenErr();
 
@@ -403,6 +425,8 @@ void CLEditCF::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
+        ETL.fileiname = "CLEditLog.txt";
+        rc = ETL.ETL();
         OpenLogn();
     }
 
@@ -456,6 +480,7 @@ void CLEditCF::OpenErr()
 }
 void CLEditCF::OpenErrn()
 {
+
     ErrFile.open("CLEditCFErrFile.txt", std::ios::out);
 
     if  (!ErrFile.is_open())
