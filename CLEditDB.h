@@ -21,8 +21,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
-#define FILE_SIZE 1000
-//#define FILE_SIZE 102400
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditDB
 {
@@ -31,8 +30,6 @@ class CLEditDB
         CLEditDB();
         virtual ~CLEditDB();
 
-// gather log data
-        CLEditXETL ETL;
 
         struct dateseq
         {
@@ -47,6 +44,8 @@ class CLEditDB
 
         int rowcnt;
 
+        bool Logging;
+
         struct InputFile
         {
             std::string IFCode; // the line of code
@@ -54,17 +53,18 @@ class CLEditDB
         InputFile inputfile[25000];  // 23,000 line is the biggest single block of code I've ever seen aka "203"
 
         int Bind();
-
         void Cursor();
         void FromStage();
         int  Count();
         void ToStage();
-
         void Free();
 
     protected:
 
     private:
+
+// gather log data
+        CLEditXETL ETL;
 
         sql::Driver * driver;
         sql::Connection * con;
@@ -99,6 +99,7 @@ class CLEditDB
 
         std::fstream LogFile;
         std::fstream ErrFile;
+        std::fstream StatFile;
 
         int bytecnt;        // bytes in a file
 
@@ -122,6 +123,9 @@ class CLEditDB
         void OpenErr();
         void OpenErrn();
         void CloseErr();
+        void OpenStat();
+        void OpenStatn();
+        void CloseStat();
 
  /*     void Freedriver();    not allowed */
         void Freecon();

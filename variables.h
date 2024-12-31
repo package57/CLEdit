@@ -79,7 +79,6 @@ std::string ReturnFunction; // the name of the function running
 std::string ReturnCode;     // a return code
 std::string ReturnMessage;  // a meaningful return message
 std::string WorkStr;         // a work string
-std::string action;
 
 // boolian
 bool FileSizeError;  // file size error - exceeds 25000 lines
@@ -89,3 +88,4 @@ bool haveaMM;
 bool haveaOO;
 bool haveaRR;
 bool Return;         // return code
+bool Logging;

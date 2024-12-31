@@ -21,8 +21,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
-//#define FILE_SIZE 102400
-#define FILE_SIZE 1000
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditXETL
 {
@@ -34,6 +33,8 @@ class CLEditXETL
         std::string fileiname;
 
         int ETL();
+
+        bool Logging;
 
     protected:
 
@@ -78,6 +79,7 @@ class CLEditXETL
 // file stream
         std::fstream LogFile;
         std::fstream ErrFile;
+        std::fstream StatFile;
         std::fstream filei;
 // SQL
        	stringstream sql;
@@ -132,31 +134,20 @@ class CLEditXETL
         bool tbexists;
         bool welcome;
         bool OnOne;
-        bool OnOneWelcome;
-        bool OnOneUser;
-        bool OnOneCommand;
-        bool OnOneParameterone;
-        bool OnOneParametertwo;
-        bool OnOneUsageDate;
-        bool OnOneElapsed;
-        bool OnOneSelect;
-        bool OnOneGetRes;
-        bool OnOneUpdate;
-        bool OnOneInsert;
-        bool OnOneInitRecord;
-        bool OnOneInitLA;
-        bool OnOneInBytes;
-        bool OnOneInRecords;
-        bool OnOneOutBytes;
-        bool OnOneOutRecords;
 
 // file functions
         void Init();
         void InitLA();
+
         void OpenLog();
         void OpenLogn();
+
+        void OpenStat();
+        void OpenStatn();
+
         void OpenErr();
         void OpenErrn();
+
 // open input file
         void OpenFile();
 // connect to database
@@ -192,6 +183,7 @@ class CLEditXETL
         void FileInRecords();
         void FileOutBytes();
         void FileOutRecords();
+        void Rows();
 
 
         void InitRecord();
@@ -199,6 +191,8 @@ class CLEditXETL
         void CloseFile();
         void CloseLog();
         void CloseErr();
+        void CloseStat();
+
         void Free();
  /*     void Freedriver();    not allowed */
         void Freecon();

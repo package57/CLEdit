@@ -19,13 +19,16 @@ int CLEditTemp::DoStuff()
         goto dostuffexit;
     }
 
-    LogFile << "Do Stuff " << std::endl;
+    if  (Logging)
+    {
+        LogFile << "Do Stuff " << std::endl;
+    }
+
+    StatFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
 
 //  do stuff here
 
-
-    action = "Do Stuff ";
 
     eop();
 
@@ -49,11 +52,21 @@ void CLEditTemp::init()
         return;
     }
 
-    LogFile << "init " << std::endl;
+    if  (Logging)
+    {
+        LogFile << "init " << std::endl;
+    }
+
+    OpenStat();
+
+    if (abend)
+    {
+        return;
+    }
 
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    StatFile << "Welcome " << std::ctime(& currentdatetime);
 
     OpenErr();
 
@@ -66,7 +79,7 @@ void CLEditTemp::init()
 void CLEditTemp::OpenLog()
 {
 
-    LogFile.open("CLEditTempLogFile.txt", ios_base::out | ios_base::app);
+    LogFile.open("CLEditTempLog.txt", ios_base::out | ios_base::app);
 
     if  (!LogFile.is_open())
     {
@@ -82,28 +95,19 @@ void CLEditTemp::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
-        abendi = ETL.ETL();
-        if (abend)
-        {
-            msg = "Log file ETL error";
-            abendi = 3503;
-            abend = true;
-            std::cout << msg << abendi << std::endl;    // better than flying blind
-            return;
-        }
-        else
-        {
-            OpenLogn();
-        }
+        OpenLogn();
     }
 
-    LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+    if  (Logging)
+    {
+        LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+    }
 
 }
 void CLEditTemp::OpenLogn()
 {
 
-    LogFile.open("CLEditTempLogFile.txt", ios_base::out);
+    LogFile.open("CLEditTempLog.txt", ios_base::out);
 
     if  (!LogFile.is_open())
     {
@@ -118,9 +122,12 @@ void CLEditTemp::OpenLogn()
 void CLEditTemp::OpenErr()
 {
 
-    LogFile << "Open Error " << std::endl;
+    if  (Logging)
+    {
+        LogFile << "Open Error " << std::endl;
+    }
 
-    ErrFile.open("CLEditTempErrFile.txt", std::ios::out | ios_base::app);
+    ErrFile.open("CLEditTempErr.txt", std::ios::out | ios_base::app);
 
     if  (!ErrFile.is_open())
     {
@@ -139,19 +146,81 @@ void CLEditTemp::OpenErr()
         OpenErrn();
     }
 
-    LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+    if  (Logging)
+    {
+        LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+    }
 
 }
 void CLEditTemp::OpenErrn()
 {
 
-    LogFile << "Open Error new " << std::endl;
+    if  (Logging)
+    {
+        LogFile << "Open Error new " << std::endl;
+    }
 
-    ErrFile.open("CLEditTempErrFile.txt", std::ios::out);
+    ErrFile.open("CLEditTempErr.txt", std::ios::out);
 
     if  (!ErrFile.is_open())
     {
         msg = "Error file Open error";
+        abendi = 3506;
+        abend = true;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+}
+void CLEditTemp::OpenStat()
+{
+
+    if  (Logging)
+    {
+        LogFile << "Open Stat " << std::endl;
+    }
+
+    StatFile.open("CLEditTempStat.txt", std::ios::out | ios_base::app);
+
+    if  (!StatFile.is_open())
+    {
+        msg = "Stat file Open error";
+        abendi = 3505;
+        abend = true;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+    bytecnt = StatFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseStat();
+        ETL.Logging = Logging;
+        ETL.fileiname = "CLEditTempStat.txt";
+        res = ETL.ETL();
+        OpenStatn();
+    }
+
+    if  (Logging)
+    {
+        LogFile << "Stat file size " << to_string(bytecnt) << std::endl;
+    }
+
+}
+void CLEditTemp::OpenStatn()
+{
+
+    if  (Logging)
+    {
+        LogFile << "Open Stat new " << std::endl;
+    }
+
+    StatFile.open("CLEditTempStat.txt", std::ios::out);
+
+    if  (!StatFile.is_open())
+    {
+        msg = "Stat file Open error";
         abendi = 3506;
         abend = true;
         std::cout << msg << abendi << std::endl;   // better than flying blind
@@ -164,9 +233,11 @@ void CLEditTemp::eop()
 
     CloseErr();
 
+    CloseStat();
+
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    StatFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
     CloseLog();
 
@@ -181,6 +252,12 @@ void CLEditTemp::CloseErr()
 {
 
     ErrFile.close();
+
+}
+void CLEditTemp::CloseStat()
+{
+
+    StatFile.close();
 
 }
 

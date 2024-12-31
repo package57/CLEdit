@@ -1,50 +1,424 @@
-Create Controls 
-Initialize 
-Init Screen 
-Init User Input 
-Init Input File 
-Init Work File 
-Init Copy / Block Copy 
-Init Move / Block Move 
-Init Overlay / Block Overlay 
-Init Repeat / Block Repeat 
-On Apply Clicked 
-Length 0
-Read Screen 
-Init User Input 
-Init Input File 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
 ApplyChanges 
-Look for CC 
-Look for CC 
-Look for CC 
-Look for CC 
-Look for DD 
-Look for DD 
-Look for DD 
-Look for DD 
-Look for MM 
-Look for MM 
-Look for MM 
-Look for MM 
-Look for OO 
-Look for OO 
-Look for OO 
-Look for OO 
-Look for RR 
-Look for RR 
-Look for RR 
-Look for RR 
-Look for >> 
-Look for >> 
-Look for >> 
-Look for >> 
-Look for << 
-Look for << 
-Look for << 
-Look for << 
-Look for XX 
-Look for XX 
-Look for XX 
-Look for XX 
-LCReasonability 
-Load Screen 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+ProcessScreen 
+ReadScreen 
+InitUser 
+WhatCommand 
+LookForChanges 
+InitIF 
+ApplyChanges 
+LookForLC 
+LookForLCCC 
+LookForCC 
+LookForLCDD 
+LookForDD 
+LookForLCMM 
+LookForMM 
+LookForMM 
+LookForLCOO 
+LookForOO 
+LookForLCRR 
+LookForRR 
+LookForLCSR 
+LookForSR 
+LookForLCSL 
+LookForSL 
+LookForLCXX 
+LookForXX 
+LCReasomability 
+LCReasonabilityBlock 
+LCReasonabilityLine 
+LCReasonabilityOverall 
+Capture 
+Ranges 
+LoadScreen 
+FocusLine 
+OnApplyClicked: Command Length 6
+WipeCommand 
+FindPrimary 
+logoff

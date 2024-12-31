@@ -73,3 +73,11 @@ struct XXFile
     bool excluded;
 };
 XXFile XX[25000];  // not at all likely
+// action reaction
+struct dateseq
+{
+    std::string date;
+    std::string seq;
+};
+dateseq DateSeq;
+

@@ -1,0 +1,10 @@
+Welcome Thu Dec 26 13:21:44 2024
+Command fromstage mydb testones
+Usage Date 20241226 0000000002
+RowCnt 1
+Elapsed 9.106
+Welcome Thu Dec 26 13:51:27 2024
+Command fromstage mydb testones
+Usage Date 20241226 0000000004
+RowCnt 1
+Elapsed 7.912

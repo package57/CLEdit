@@ -19,13 +19,18 @@ int CLEditCF::copyfile(std::string fileiname, std::string fileoname)
         goto copyexit;
     }
 
+    if (Logging)
+    {
+       LogFile << "copyfile " << std::endl;
+    }
+
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    StatFile << "Welcome " << std::ctime(& currentdatetime);
 
-    LogFile << "Command copyfile " << fileiname << " " << fileoname << std::endl;
+    StatFile << "Command copyfile " << fileiname << " " << fileoname << std::endl;
 
-    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
+    StatFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     openfo();
 
@@ -70,13 +75,18 @@ int CLEditCF::openfile(std::string fileiname)
         goto openexit;
     }
 
+    if (Logging)
+    {
+       LogFile << "openfile " << std::endl;
+    }
+
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    StatFile << "Welcome " << std::ctime(& currentdatetime);
 
-    LogFile << "Command openfile " << fileiname << std::endl;
+    StatFile << "Command openfile " << fileiname << std::endl;
 
-    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
+    StatFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     openfi();
 
@@ -122,27 +132,31 @@ int CLEditCF::savefile(std::string fileoname)
         goto saveexit;
     }
 
+    if (Logging)
+    {
+       LogFile << "savefile " << std::endl;
+    }
+
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    StatFile << "Welcome " << std::ctime(& currentdatetime);
 
     if (Mode == "savefile")
     {
-        LogFile << "Command savefile " << fileoname << std::endl;
+        StatFile << "Command savefile " << fileoname << std::endl;
     }
 
     if (Mode == "saveasfile")
     {
-        LogFile << "Command saveasfile " << fileoname << std::endl;
+        StatFile << "Command saveasfile " << fileoname << std::endl;
     }
 
     if (Mode == "createfile")
     {
-        LogFile << "Command createfile " << fileoname << std::endl;
+        StatFile << "Command createfile " << fileoname << std::endl;
     }
 
-
-    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
+    StatFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     openfo();
 
@@ -168,13 +182,18 @@ saveexit:
 void CLEditCF::eop()
 {
 
-    LogFile << "FileInBytes " << fileibytecnt << std::endl;
+    if (Logging)
+    {
+       LogFile << "EoP " << std::endl;
+    }
 
-    LogFile << "FileInRecords " << fileireccnt << std::endl;
+    StatFile << "FileInBytes " << fileibytecnt << std::endl;
 
-    LogFile << "FileOutBytes " << fileobytecnt << std::endl;
+    StatFile << "FileInRecords " << fileireccnt << std::endl;
 
-    LogFile << "FileOutRecords " << fileoreccnt << std::endl;
+    StatFile << "FileOutBytes " << fileobytecnt << std::endl;
+
+    StatFile << "FileOutRecords " << fileoreccnt << std::endl;
 
     closefi();
 
@@ -184,9 +203,11 @@ void CLEditCF::eop()
 
     stop_s = std::clock();
 
-    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    StatFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
     CloseLog();
+
+    CloseStat();
 
 }
 void CLEditCF::stringtochar()
@@ -219,6 +240,13 @@ void CLEditCF::init()
 //  fileireccnt  = 0;  // no
 //  fileoreccnt  = 0;  // no
 
+    OpenStat();
+
+    if (abend)
+    {
+        return;
+    }
+
     OpenLog();
 
     if (abend)
@@ -226,7 +254,10 @@ void CLEditCF::init()
         return;
     }
 
-    LogFile << "init " << std::endl;
+    if (Logging)
+    {
+       LogFile << "init " << std::endl;
+    }
 
     OpenErr();
 
@@ -409,7 +440,7 @@ void CLEditCF::initsavefileir()
 void CLEditCF::OpenLog()
 {
 
-    LogFile.open("CLEditCFLogFile.txt", ios_base::out | ios_base::app);
+    LogFile.open("CLEditCFLog.txt", ios_base::out | ios_base::app);
 
     if  (!LogFile.is_open())
     {
@@ -425,18 +456,19 @@ void CLEditCF::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
-        ETL.fileiname = "CLEditLog.txt";
-        rc = ETL.ETL();
         OpenLogn();
     }
 
-    LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+    if (Logging)
+    {
+        LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+    }
 
 }
 void CLEditCF::OpenLogn()
 {
 
-    LogFile.open("CLEditCFLogFile.txt", ios_base::out);
+    LogFile.open("CLEditCFLog.txt", ios_base::out);
 
     if  (!LogFile.is_open())
     {
@@ -456,7 +488,7 @@ void CLEditCF::CloseLog()
 }
 void CLEditCF::OpenErr()
 {
-    ErrFile.open("CLEditCFErrFile.txt", std::ios::out | ios_base::app);
+    ErrFile.open("CLEditCFErr.txt", std::ios::out | ios_base::app);
 
     if  (!ErrFile.is_open())
     {
@@ -475,13 +507,16 @@ void CLEditCF::OpenErr()
         OpenErrn();
     }
 
-    LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+    if (Logging)
+    {
+        LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+    }
 
 }
 void CLEditCF::OpenErrn()
 {
 
-    ErrFile.open("CLEditCFErrFile.txt", std::ios::out);
+    ErrFile.open("CLEditCFErr.txt", std::ios::out);
 
     if  (!ErrFile.is_open())
     {
@@ -497,5 +532,57 @@ void CLEditCF::CloseErr()
 {
 
     ErrFile.close();
+
+}
+void CLEditCF::OpenStat()
+{
+
+    StatFile.open("CLEditCFStat.txt", ios_base::out | ios_base::app);
+
+    if  (!StatFile.is_open())
+    {
+        msg = "Stat file Open error";
+        abendi = 3507;
+        abend = true;
+        std::cout << msg << abendi << std::endl;    // better than flying blind
+        return;
+    }
+
+    bytecnt = StatFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseStat();
+        ETL.Logging = Logging;
+        ETL.fileiname = "CLEditCFStat.txt";
+        rc = ETL.ETL();
+        OpenStatn();
+    }
+
+    if (Logging)
+    {
+        LogFile << "Stat file size " << to_string(bytecnt) << std::endl;
+    }
+
+}
+void CLEditCF::OpenStatn()
+{
+
+    StatFile.open("CLEditCFStat.txt", ios_base::out);
+
+    if  (!StatFile.is_open())
+    {
+        msg = "Stat file Open error";
+        abendi = 3508;
+        abend = true;
+        std::cout << msg << abendi << std::endl;    // better than flying blind
+        return;
+    }
+
+}
+void CLEditCF::CloseStat()
+{
+
+    StatFile.close();
 
 }

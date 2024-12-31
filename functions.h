@@ -22,6 +22,9 @@ void CloseLog();
 void OpenErr();
 void OpenErrn();
 void CloseErr();
+void OpenStat();
+void OpenStatn();
+void CloseStat();
 
 // f-key actions and or primary command actions
 void Report();

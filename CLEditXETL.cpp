@@ -26,7 +26,10 @@ int CLEditXETL::ETL()
         return abendi;
     }
 
-    LogFile << "ETL " << std::endl;
+    if (Logging)
+    {
+        LogFile << "ETL " << std::endl;
+    }
 
 // 	bind and connect to database
     Bind();
@@ -71,7 +74,10 @@ void CLEditXETL::Init()
         return;
     }
 
-    LogFile << "Init " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Init " << std::endl;
+    }
 
     OpenErr();
 
@@ -135,25 +141,12 @@ void CLEditXETL::Init()
     elapsed = false;
     tbexists = true;
     OnOne = true;
-    OnOneWelcome = true;
-    OnOneUser = true;
-    OnOneCommand = true;
-    OnOneParameterone = true;
-    OnOneParametertwo = true;
-    OnOneUsageDate = true;
-    OnOneElapsed = true;
-    OnOneSelect = true;
-    OnOneGetRes = true;
-    OnOneUpdate = true;
-    OnOneInsert = true;
-    OnOneInitRecord = true;
-    OnOneInitLA = true;
 
 }
 void CLEditXETL::OpenLog()
 {
 
-    LogFile.open("CLEditXETLLogFile.txt", ios_base::out | ios_base::app);
+    LogFile.open("CLEditXETLLog.txt", ios_base::out | ios_base::app);
 
     if  (!LogFile.is_open())
     {
@@ -178,7 +171,7 @@ void CLEditXETL::OpenLog()
 void CLEditXETL::OpenLogn()
 {
 
-    LogFile.open("CLEditXETLLogFile.txt", ios_base::out);
+    LogFile.open("CLEditXETLLog.txt", ios_base::out);
 
     if  (!LogFile.is_open())
     {
@@ -193,7 +186,7 @@ void CLEditXETL::OpenLogn()
 void CLEditXETL::OpenErr()
 {
 
-    ErrFile.open("CLEditXETLErrFile.txt", std::ios::out | ios_base::app);
+    ErrFile.open("CLEditXETLErr.txt", std::ios::out | ios_base::app);
 
     if  (!ErrFile.is_open())
     {
@@ -218,7 +211,7 @@ void CLEditXETL::OpenErr()
 void CLEditXETL::OpenErrn()
 {
 
-    ErrFile.open("CLEditXETLErrFile.txt", std::ios::out);
+    ErrFile.open("CLEditXETLErr.txt", std::ios::out);
 
     if  (!ErrFile.is_open())
     {
@@ -233,7 +226,11 @@ void CLEditXETL::OpenErrn()
 void CLEditXETL::OpenFile()
 {
 
-    LogFile << "Open File " << std::endl;
+    if (Logging)
+    {
+        LogFile << "OpenFile " << std::endl;
+    }
+
 // keep trying to open the file for output, until you can
 // you won't be able to do that if the file is not complete or available
     fileoi = 0;
@@ -275,7 +272,10 @@ void CLEditXETL::OpenFile()
 void CLEditXETL::Bind()
 {
 
-    LogFile << "Bind " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Bind " << std::endl;
+    }
 
     Driver();
 
@@ -331,7 +331,10 @@ void CLEditXETL::Bind()
 void CLEditXETL::Driver()
 {
 
-    LogFile << "Driver " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Driver " << std::endl;
+    }
 
     try
     {
@@ -351,7 +354,10 @@ void CLEditXETL::Driver()
 void CLEditXETL::Connect()
 {
 
-    LogFile << "Connect " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Connect " << std::endl;
+    }
 
     DataBase = "mydb";
 
@@ -374,7 +380,10 @@ void CLEditXETL::Connect()
 void CLEditXETL::Statement()
 {
 
-    LogFile << "Statement " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Statement " << std::endl;
+    }
 
     try
     {
@@ -394,7 +403,10 @@ void CLEditXETL::Statement()
 void CLEditXETL::UseDb()
 {
 
-    LogFile << "UseDb " << std::endl;
+    if (Logging)
+    {
+        LogFile << "UseDb " << std::endl;
+    }
 
     try
     {
@@ -418,7 +430,10 @@ void CLEditXETL::UseDb()
 bool CLEditXETL::Exists()
 {
 
-    LogFile << "Exists " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Exists " << std::endl;
+    }
 
     TableName = "editxetl";
 
@@ -453,7 +468,10 @@ bool CLEditXETL::Exists()
 void CLEditXETL::DropTable()
 {
 
-    LogFile << "Drop Table " << std::endl;
+    if (Logging)
+    {
+        LogFile << "DropTable " << std::endl;
+    }
 
     try
     {
@@ -476,7 +494,10 @@ void CLEditXETL::DropTable()
 void CLEditXETL::CreateTable()
 {
 
-    LogFile << "Create Table " << std::endl;
+    if (Logging)
+    {
+        LogFile << "CreateTable " << std::endl;
+    }
 
     try
     {
@@ -515,7 +536,10 @@ void CLEditXETL::CreateTable()
 void CLEditXETL::Error()
 {
 
-    LogFile << "Error " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Error " << std::endl;
+    }
 
     ErrFile << std::endl;
     ErrFile << "CLEditXETL - Error " << errorcode;
@@ -530,9 +554,9 @@ void CLEditXETL::Error()
 void CLEditXETL::ProcessFile()
 {
 
-    if (fileireccnt == 0)
+    if (Logging)
     {
-        LogFile << "ProcessFile " << std::endl;
+        LogFile << "ProcesssFile " << std::endl;
     }
 
     j++;
@@ -554,7 +578,7 @@ void CLEditXETL::ProcessFile()
 void CLEditXETL::ReadFile()
 {
 
-    if (fileibytecnt == 0)
+    if (Logging)
     {
         LogFile << "ReadFile " << std::endl;
     }
@@ -572,9 +596,9 @@ void CLEditXETL::ReadFile()
 void CLEditXETL::ProcessRecord()
 {
 
-    if (fileireccnt == 1)
+    if (Logging)
     {
-        LogFile << "Process Record " << std::endl;
+        LogFile << "ProcessRecord " << std::endl;
     }
 
 // look for words and gather meta data
@@ -605,10 +629,9 @@ void CLEditXETL::ProcessRecord()
 void CLEditXETL::InitRecord()
 {
 
-    if (OnOneInitRecord)
+    if (Logging)
     {
         LogFile << "InitRecord " << std::endl;
-        OnOneInitRecord = false;
     }
 
     for (i = 0; i < j; i++)   // i < j to save time
@@ -623,7 +646,7 @@ void CLEditXETL::InitRecord()
 void CLEditXETL::Gather()
 {
 
-    if (fileireccnt == 1)
+    if (Logging)
     {
         LogFile << "Gather " << std::endl;
     }
@@ -704,14 +727,22 @@ void CLEditXETL::Gather()
 // LA.Outputbytes
     if (Word == "FileOutBytes")
     {
-        FileInBytes();
+        FileOutBytes();
         return;
     }
 // FileOutRecords 41
 // LA.Outputrecs
     if (Word == "FileOutRecords")
     {
-        FileInRecords();
+        FileOutRecords();
+        return;
+    }
+
+// RowCnt 1
+// LA.RowCnt
+    if (Word == "RowCnt")
+    {
+        Rows();
         return;
     }
 
@@ -728,7 +759,7 @@ void CLEditXETL::Gather()
 void CLEditXETL::LookforWord()
 {
 
-    if (fileireccnt == 1)
+    if (Logging)
     {
         LogFile << "Look for Word " << std::endl;
     }
@@ -753,10 +784,9 @@ void CLEditXETL::LookforWord()
 void CLEditXETL::Welcome()
 {
 
-    if (OnOneWelcome)
+    if (Logging)
     {
         LogFile << "Welcome " << std::endl;
-        OnOneWelcome = false;
     }
 
 // Welcome Sun Dec 22 03:21:05 2024  LA.Time
@@ -783,10 +813,9 @@ void CLEditXETL::Welcome()
 void CLEditXETL::User()
 {
 
-    if (OnOneUser)
+    if (Logging)
     {
         LogFile << "User " << std::endl;
-        OnOneUser = false;
     }
 // User Pierre  LA.User
 // 01234567891123456789212345678931234
@@ -811,10 +840,9 @@ void CLEditXETL::User()
 void CLEditXETL::Command()
 {
 
-    if (OnOneCommand)
+    if (Logging)
     {
         LogFile << "Command " << std::endl;
-        OnOneCommand = false;
     }
 
 // Command fromstage    LA.Action
@@ -840,10 +868,9 @@ void CLEditXETL::Command()
 void CLEditXETL::Parameterone()
 {
 
-    if (OnOneParameterone)
+    if (Logging)
     {
         LogFile << "Parameterone " << std::endl;
-        OnOneParameterone = false;
     }
 
 // Parameterone mydb    LA.DataBase or LA.InputFile
@@ -878,10 +905,9 @@ void CLEditXETL::Parameterone()
 void CLEditXETL::Parametertwo()
 {
 
-    if (OnOneParametertwo)
+    if (Logging)
     {
         LogFile << "Parametertwo " << std::endl;
-        OnOneParametertwo = false;
     }
 
 // Parametertwo testones    LA.TableName /  LA.OutputFile
@@ -921,10 +947,9 @@ void CLEditXETL::Parametertwo()
 void CLEditXETL::UsageDate()
 {
 
-    if (OnOneUsageDate)
+    if (Logging)
     {
         LogFile << "UsageDate " << std::endl;
-        OnOneUsageDate = false;
     }
 
 // Usage Date 20241222 0000000003   LA.Date / LA.Seq
@@ -967,16 +992,15 @@ void CLEditXETL::UsageDate()
 void CLEditXETL::FileInBytes()
 {
 
-    if (OnOneInBytes)
+    if (Logging)
     {
         LogFile << "FileInBytes " << std::endl;
-        OnOneUser = false;
     }
 
 // FileInBytes 0
 // 01234567891123456
 
-    Word = "";
+    Word = "0";
 
     for (i = 12; i < CodeStrl; i++)
     {
@@ -997,15 +1021,14 @@ void CLEditXETL::FileInBytes()
 void CLEditXETL::FileInRecords()
 {
 
-    if (OnOneInRecords)
+    if (Logging)
     {
         LogFile << "FileInRecords " << std::endl;
-        OnOneUser = false;
     }
 // FileInRecords 26
 // 01234567891123456
 
-    Word = "";
+    Word = "0";
 
     for (i = 14; i < CodeStrl; i++)
     {
@@ -1026,16 +1049,15 @@ void CLEditXETL::FileInRecords()
 void CLEditXETL::FileOutBytes()
 {
 
-    if (OnOneOutBytes)
+    if (Logging)
     {
         LogFile << "FileOutBytes " << std::endl;
-        OnOneUser = false;
     }
 
 // FileOutBytes 337
 // 01234567891123456
 
-    Word = "";
+    Word = "0";
 
     for (i = 13; i < CodeStrl; i++)
     {
@@ -1056,16 +1078,15 @@ void CLEditXETL::FileOutBytes()
 void CLEditXETL::FileOutRecords()
 {
 
-    if (OnOneOutRecords)
+    if (Logging)
     {
         LogFile << "FileOutRecords " << std::endl;
-        OnOneUser = false;
     }
 
 // FileOutRecords 41
 // 01234567891123456
 
-    Word = "";
+    Word = "0";
 
     for (i = 15; i < CodeStrl; i++)
     {
@@ -1083,13 +1104,41 @@ void CLEditXETL::FileOutRecords()
     LA.Outputrecs = std::stoi(Word);
 
 }
+void CLEditXETL::Rows()
+{
+
+    if (Logging)
+    {
+        LogFile << "Rows " << std::endl;
+    }
+
+// RowCnt 1
+// 01234567891123456
+
+    Word = "0";
+
+    for (i = 7; i < CodeStrl; i++)
+    {
+        if  (CodeStr[i] == ' '
+        ||   CodeStr[i] == '\n')
+        {
+            break;
+        }
+        else
+        {
+            Word += CodeStr[i];
+        }
+    }
+
+    LA.RowCnt = std::stoi(Word);
+
+}
 void CLEditXETL::Elapsed()
 {
 
-    if (OnOneElapsed)
+    if (Logging)
     {
         LogFile << "Elapsed " << std::endl;
-        OnOneElapsed = false;
     }
 
 // Elapsed 14.376   LA.ElapsedTime
@@ -1135,10 +1184,9 @@ void CLEditXETL::Elapsed()
 void CLEditXETL::Select()
 {
 
-    if  (OnOneSelect)
+    if  (Logging)
     {
         LogFile << "Select " << std::endl;
-        OnOneSelect = false;
     }
 
     try
@@ -1158,12 +1206,14 @@ void CLEditXETL::Select()
         Query += "tbname, ";
         Query += "elapseda, ";
         Query += "elapsedr FROM ";
-        Query += DataBase;
-        Query += ".";
+//      Query += DataBase;
+//      Query += ".";
         Query += TableName;
-        Query += "WHERE dateseq = ";
+        Query += " WHERE dateseq = '";
         Query += LA.DateSeq;
-        Query += ";";
+        Query += "';";
+//res = stmt->executeQuery("SELECT id, label FROM test ORDER BY id ASC");
+//while (res->next()) {
         res = stmt->executeQuery(Query);
     }
     catch (sql::SQLException &e)
@@ -1180,10 +1230,9 @@ void CLEditXETL::Select()
 void CLEditXETL::GetRes()
 {
 
-    if (OnOneGetRes)
+    if (Logging)
     {
         LogFile << "GetRes " << std::endl;
-        OnOneGetRes = false;
     }
 
 // key / primary index
@@ -1261,10 +1310,9 @@ void CLEditXETL::GetRes()
 void CLEditXETL::Update()
 {
 
-    if (OnOneUpdate)
+    if (Logging)
     {
         LogFile << "Update " << std::endl;
-        OnOneUpdate = false;
     }
 
     try
@@ -1273,37 +1321,37 @@ void CLEditXETL::Update()
         sql << "UPDATE ";
         sql << TableName;
         sql << " SET ";
-        sql << ", usercode = ";
+        sql << " usercode = '";
         sql << LA.User;
-        sql << ", timecode = ";
+        sql << "', timecode = '";
         sql << LA.Time;
-        sql << ", action = ";
+        sql << "', action = '";
         sql << LA.Action;
-        sql << ", input = ";
+        sql << "', input = '";
         sql << LA.InputFile;
-        sql << ", inrec = ";
+        sql << "', inrec = ";
         sql << LA.Inputrecs;
         sql << ", inbyte = ";
         sql << LA.Inputbytes;
-        sql << ", output = ";
+        sql << ", output = '";
         sql << LA.OutputFile;
-        sql << ", outrec = ";
+        sql << "', outrec = ";
         sql << LA.Outputrecs;
         sql << ", outbyte = ";
         sql << LA.Outputbytes;
         sql << ", rowcnt = ";
         sql << LA.RowCnt;
-        sql << ", dbname = ";
+        sql << ", dbname = '";
         sql << LA.DataBase;
-        sql << ", tbname = ";
+        sql << "', tbname = '";
         sql << LA.TableName;
-        sql << ", elapseda = ";
+        sql << "', elapseda = ";
         sql << LA.ElapsedAct;
         sql << ", elapsedr = ";
         sql << LA.ElapsedRes;
-        sql << " WHERE dateseq = ";
+        sql << " WHERE dateseq = '";
         sql <<LA.DateSeq;
-        sql << ";";
+        sql << "';";
         stmt->execute(sql.str());
     }
     catch (sql::SQLException &e)
@@ -1319,10 +1367,9 @@ void CLEditXETL::Update()
 void CLEditXETL::Insert()
 {
 
-    if (OnOneInsert)
+    if (Logging)
     {
         LogFile << "Insert " << std::endl;
-        OnOneInsert = false;
     }
 
     try
@@ -1376,10 +1423,9 @@ void CLEditXETL::Insert()
 void CLEditXETL::InitLA()
 {
 
-    if (OnOneInitLA)
+    if (Logging)
     {
         LogFile << "InitLA " << std::endl;
-        OnOneInitLA = false;
     }
 
     LA.DateSeq = "";
@@ -1402,7 +1448,10 @@ void CLEditXETL::InitLA()
 void CLEditXETL::Free()
 {
 
-    LogFile << "Free " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Free " << std::endl;
+    }
 
     Freecon();
 
@@ -1420,7 +1469,10 @@ void CLEditXETL::Free()
 void CLEditXETL::Freecon()
 {
 
-    LogFile << "Free con " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freecon " << std::endl;
+    }
 
     try
     {
@@ -1440,7 +1492,10 @@ void CLEditXETL::Freecon()
 void CLEditXETL::Freestmt()
 {
 
-    LogFile << "Free stmt " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freestmt " << std::endl;
+    }
 
     try
     {
@@ -1460,7 +1515,10 @@ void CLEditXETL::Freestmt()
 void CLEditXETL::Freepstmt()
 {
 
-    LogFile << "Free pstmt " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freepstmt " << std::endl;
+    }
 
     try
     {
@@ -1480,7 +1538,10 @@ void CLEditXETL::Freepstmt()
 void CLEditXETL::Freeres()
 {
 
-    LogFile << "Free res " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freeres " << std::endl;
+    }
 
     try
     {
@@ -1501,11 +1562,15 @@ void CLEditXETL::Freeres()
 void CLEditXETL::EoP()
 {
 
-    LogFile << "EoP " << std::endl;
-    LogFile << "Inserts " << InsertCnt << std::endl;
-    LogFile << "Updates " << UpdateCnt << std::endl;
-    LogFile << "File in Bytes " << fileibytecnt << std::endl;
-    LogFile << "File in Records " << fileireccnt << std::endl;
+    if (Logging)
+    {
+        LogFile << "EoP " << std::endl;
+    }
+
+    StatFile << "Inserts " << InsertCnt << std::endl;
+    StatFile << "Updates " << UpdateCnt << std::endl;
+    StatFile << "FileinBytes " << fileibytecnt << std::endl;
+    StatFile << "FileinRecords " << fileireccnt << std::endl;
 
     CloseFile();
 
@@ -1513,15 +1578,15 @@ void CLEditXETL::EoP()
 
     stop_s = std::clock();
 
-    LogFile << action << "elapsed time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    StatFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
     CloseLog();
+
+    CloseStat();
 
 }
 void CLEditXETL::CloseFile()
 {
-
-    LogFile << "CloseFile " << std::endl;
 
     filei.close();
 
@@ -1532,10 +1597,15 @@ void CLEditXETL::CloseLog()
     LogFile.close();
 
 }
-
 void CLEditXETL::CloseErr()
 {
 
     ErrFile.close();
+
+}
+void CLEditXETL::CloseStat()
+{
+
+    StatFile.close();
 
 }

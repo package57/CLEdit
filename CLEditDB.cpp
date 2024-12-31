@@ -13,12 +13,17 @@ int CLEditDB::Bind()
 
     Initialize();
 
-    start_s = std::clock();
-
     if  (abend)
     {
         return abendi;
     }
+
+    if (Logging)
+    {
+        LogFile << "Bind " << std::endl;
+    }
+
+    start_s = std::clock();
 
     Driver();
 
@@ -52,7 +57,12 @@ void CLEditDB::Initialize()
 
     OpenErr();
 
-    LogFile << "Initialize " << std::endl;
+    OpenStat();
+
+    if (Logging)
+    {
+        LogFile << "Initialize " << std::endl;
+    }
 
     OnOne = true;
 
@@ -60,7 +70,10 @@ void CLEditDB::Initialize()
 void CLEditDB::Driver()
 {
 
-    LogFile << "Driver " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Driver " << std::endl;
+    }
 
     try
     {
@@ -80,7 +93,10 @@ void CLEditDB::Driver()
 void CLEditDB::Connect()
 {
 
-    LogFile << "Connect " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Connect " << std::endl;
+    }
 
     try
     {
@@ -101,7 +117,10 @@ void CLEditDB::Connect()
 void CLEditDB::Statement()
 {
 
-    LogFile << "Statement " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Statement " << std::endl;
+    }
 
     try
     {
@@ -121,7 +140,10 @@ void CLEditDB::Statement()
 int CLEditDB::Count()
 {
 
-    LogFile << "Count(*) " << DataBase << " " << TableName << std::endl;
+    if (Logging)
+    {
+        LogFile << "Count " << std::endl;
+    }
 
     try
     {
@@ -151,15 +173,16 @@ int CLEditDB::Count()
         abend = true;
     }
 
-    LogFile << "Count(*) " << to_string(rowcnt) << std::endl;
-
     return rowcnt;
 
 }
 void CLEditDB::Cursor()
 {
 
-    LogFile << "Cursor " << DataBase << " " << TableName << std::endl;
+    if (Logging)
+    {
+        LogFile << "Cursor " << std::endl;
+    }
 
     try
     {
@@ -185,7 +208,10 @@ void CLEditDB::Cursor()
 void CLEditDB::InitInputFile()
 {
 
-    LogFile << "Init Input File " << std::endl;
+    if (Logging)
+    {
+        LogFile << "InitInputFile " << std::endl;
+    }
 
     inputfile[0].IFCode = "";
 
@@ -198,21 +224,26 @@ void CLEditDB::InitInputFile()
 void CLEditDB::ToStage()
 {
 
+    if (Logging)
+    {
+        LogFile << "ToStage " << std::endl;
+    }
+
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    StatFile << "Welcome " << std::ctime(& currentdatetime);
 
     if (Mode == "tostage")
     {
-        LogFile << "Command tostage " << DataBase << " " << TableName << std::endl;
+        StatFile << "Command tostage " << DataBase << " " << TableName << std::endl;
     }
 
     if (Mode == "createtable")
     {
-        LogFile << "Command createtable " << DataBase << " " << TableName << std::endl;
+        StatFile << "Command createtable " << DataBase << " " << TableName << std::endl;
     }
 
-    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
+    StatFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     UseDb();
 
@@ -226,17 +257,20 @@ void CLEditDB::ToStage()
         InsertRow();
     }
 
-    LogFile << "RowCnt " << rowcnt << std::endl;
+    StatFile << "RowCnt " << rowcnt << std::endl;
 
     stop_s = std::clock();
 
-    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    StatFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::UseDb()
 {
 
-    LogFile << "UseDb " << std::endl;
+    if (Logging)
+    {
+        LogFile << "UseDb " << std::endl;
+    }
 
     try
     {
@@ -260,7 +294,10 @@ void CLEditDB::UseDb()
 void CLEditDB::DropTable()
 {
 
-    LogFile << "Drop Table " << std::endl;
+    if (Logging)
+    {
+        LogFile << "DropTable " << std::endl;
+    }
 
     try
     {
@@ -283,7 +320,10 @@ void CLEditDB::DropTable()
 void CLEditDB::CreateTable()
 {
 
-    LogFile << "CreateTable " << std::endl;
+    if (Logging)
+    {
+        LogFile << "CreateTable " << std::endl;
+    }
 
     try
     {
@@ -309,7 +349,10 @@ void CLEditDB::InsertRow()
 
     if (OnOne)
     {
-        LogFile << "Insert Row " << std::endl;
+        if (Logging)
+        {
+            LogFile << "InsertRow " << std::endl;
+        }
         OnOne = false;
     }
 
@@ -365,15 +408,20 @@ void CLEditDB::FixQuote()
 void CLEditDB::FromStage()
 {
 
+    if (Logging)
+    {
+        LogFile << "FromStage " << std::endl;
+    }
+
     currentdatetime = std::time(nullptr);
 
-    LogFile << "Welcome " << std::ctime(& currentdatetime);
+    StatFile << "Welcome " << std::ctime(& currentdatetime);
 
 //  start_s = std::clock();     moved to Bind(), FromStage() is Bind(), Count(), Cursor() and FromStage()
 
-    LogFile << "Command fromstage " << DataBase << " " << TableName << std::endl;
+    StatFile << "Command fromstage " << DataBase << " " << TableName << std::endl;
 
-    LogFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
+    StatFile << "Usage Date " << DateSeq.date << " " << DateSeq.seq << std::endl;
 
     InitInputFile();
 
@@ -382,10 +430,13 @@ void CLEditDB::FromStage()
         int i = 0;
         while (res->next())
         {
-            LogFile << "CLEdit ";
-            LogFile << " id "   << res->getInt("id");
-            LogFile << " code " << res->getString("code");
-            LogFile << std::endl;
+            if (Logging)
+            {
+                LogFile << "CLEdit ";
+                LogFile << " id "   << res->getInt("id");
+                LogFile << " code " << res->getString("code");
+                LogFile << std::endl;
+            }
             inputfile[i].IFCode = res->getString("code");
             i++;
         }
@@ -400,17 +451,20 @@ void CLEditDB::FromStage()
         abend = true;
     }
 
-    LogFile << "RowCnt " << rowcnt << std::endl;
+    StatFile << "RowCnt " << rowcnt << std::endl;
 
     stop_s = std::clock();
 
-    LogFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
+    StatFile << "Elapsed " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 void CLEditDB::Free()
 {
 
-    LogFile << "Free " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Free " << std::endl;
+    }
 
     Freecon();
 
@@ -428,7 +482,10 @@ void CLEditDB::Free()
 void CLEditDB::Freecon()
 {
 
-    LogFile << "Free con " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freecon " << std::endl;
+    }
 
     try
     {
@@ -448,7 +505,10 @@ void CLEditDB::Freecon()
 void CLEditDB::Freestmt()
 {
 
-    LogFile << "Free stmt " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freestmt " << std::endl;
+    }
 
     try
     {
@@ -468,7 +528,10 @@ void CLEditDB::Freestmt()
 void CLEditDB::Freepstmt()
 {
 
-    LogFile << "Free pstmt " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freepstmt " << std::endl;
+    }
 
     try
     {
@@ -488,7 +551,10 @@ void CLEditDB::Freepstmt()
 void CLEditDB::Freeres()
 {
 
-    LogFile << "Free res " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Freeres " << std::endl;
+    }
 
     try
     {
@@ -508,7 +574,10 @@ void CLEditDB::Freeres()
 void CLEditDB::Error()
 {
 
-    LogFile << "Error " << std::endl;
+    if (Logging)
+    {
+        LogFile << "Error " << std::endl;
+    }
 
     ErrFile << std::endl;
     ErrFile << "CLEditDB - Error " << errorcode;
@@ -525,7 +594,7 @@ void CLEditDB::Error()
 void CLEditDB::OpenLog()
 {
 
-    LogFile.open("CLEditDBLogFile.txt", ios_base::out | ios_base::app);
+    LogFile.open("CLEditDBLog.txt", ios_base::out | ios_base::app);
 
     if  (!LogFile.is_open())
     {
@@ -541,18 +610,20 @@ void CLEditDB::OpenLog()
     if  (bytecnt > FILE_SIZE)
     {
         CloseLog();
-        ETL.fileiname = "CLEditLog.txt";
-        rc = ETL.ETL();
+
         OpenLogn();
     }
 
-    LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+    if (Logging)
+    {
+        LogFile << "Log file size " << to_string(bytecnt) << std::endl;
+    }
 
 }
 void CLEditDB::OpenLogn()
 {
 
-    LogFile.open("CLEditDBLogFile.txt", ios_base::out);
+    LogFile.open("CLEditDBLog.txt", ios_base::out);
 
     if  (!LogFile.is_open())
     {
@@ -572,7 +643,7 @@ void CLEditDB::CloseLog()
 }
 void CLEditDB::OpenErr()
 {
-    ErrFile.open("CLEditDBErrFile.txt", std::ios::out | ios_base::app);
+    ErrFile.open("CLEditDBErr.txt", std::ios::out | ios_base::app);
 
     if  (!ErrFile.is_open())
     {
@@ -591,12 +662,15 @@ void CLEditDB::OpenErr()
         OpenErrn();
     }
 
-    LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+    if (Logging)
+    {
+        LogFile << "Error file size " << to_string(bytecnt) << std::endl;
+    }
 
 }
 void CLEditDB::OpenErrn()
 {
-    ErrFile.open("CLEditDBErrFile.txt", std::ios::out);
+    ErrFile.open("CLEditDBErr.txt", std::ios::out);
 
     if  (!ErrFile.is_open())
     {
@@ -614,3 +688,54 @@ void CLEditDB::CloseErr()
     ErrFile.close();
 
 }
+void CLEditDB::OpenStat()
+{
+    StatFile.open("CLEditDBStat.txt", std::ios::out | ios_base::app);
+
+    if  (!StatFile.is_open())
+    {
+        msg = "Stat file Open error";
+        abendi = 3516;
+        abend = true;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+    bytecnt = StatFile.tellg();
+
+    if  (bytecnt > FILE_SIZE)
+    {
+        CloseStat();
+        ETL.Logging = Logging;
+        ETL.fileiname = "CLEditDBStat.txt";
+        rc = ETL.ETL();
+        OpenStatn();
+    }
+
+    if (Logging)
+    {
+        LogFile << "Stat file size " << to_string(bytecnt) << std::endl;
+    }
+
+}
+void CLEditDB::OpenStatn()
+{
+    StatFile.open("CLEditDBStat.txt", std::ios::out);
+
+    if  (!StatFile.is_open())
+    {
+        msg = "Stat file Open Stator";
+        abendi = 3517;
+        abend = true;
+        std::cout << msg << abendi << std::endl;   // better than flying blind
+        return;
+    }
+
+}
+void CLEditDB::CloseStat()
+{
+
+    StatFile.close();
+
+}
+

@@ -10,8 +10,7 @@
 #include <ctime>
 #include <ctype.h>
 #include <chrono>
-#define FILE_SIZE 1000
-//#define FILE_SIZE 102400
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditCF
 {
@@ -19,9 +18,6 @@ class CLEditCF
 
         CLEditCF();
         virtual ~CLEditCF();
-
-// gather log data
-        CLEditXETL ETL;
 
         struct dateseq
         {
@@ -35,6 +31,8 @@ class CLEditCF
         std::string Mode;       // save, saveas, create
 
         int reccnt;
+
+        bool Logging;
 
         struct InputFile
         {
@@ -52,8 +50,12 @@ class CLEditCF
 
     private:
 
+    // gather log data
+        CLEditXETL ETL;
+
         std::fstream LogFile;
         std::fstream ErrFile;
+        std::fstream StatFile;
         std::fstream filei;
         std::fstream fileo;
 
@@ -97,6 +99,9 @@ class CLEditCF
         void OpenErr();
         void OpenErrn();
         void CloseErr();
+        void OpenStat();
+        void OpenStatn();
+        void CloseStat();
         void openfo();
         void openfi();
         void closefo();

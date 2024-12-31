@@ -10,8 +10,7 @@
 #include <ctype.h>
 #include <chrono>
 #include <iomanip>
-#define FILE_SIZE 1000
-//#define FILE_SIZE 102400
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditAR
 {
@@ -27,6 +26,8 @@ class CLEditAR
         };
         dateseq DateSeq;
 
+        bool Logging;
+
         int ActReact();
 
     protected:
@@ -35,6 +36,7 @@ class CLEditAR
 
         std::fstream LogFile;
         std::fstream ErrFile;
+        std::fstream StatFile;
         std::fstream ActFile;
 
         std::time_t currentdatetime;
@@ -55,8 +57,7 @@ class CLEditAR
 
         std::string str;
         std::string msg;
-        std::string action;
-        std::string ToString(int);
+
         dateseq CurrentAR;
         dateseq NewAR;
 
@@ -69,8 +70,12 @@ class CLEditAR
         void OpenErr();
         void OpenErrn();
         void CloseErr();
+        void OpenStat();
+        void OpenStatn();
+        void CloseStat();
         void eop();
 
+        std::string ToString(int);
         void GetDate();
         void OpenI();
         void OldFile();

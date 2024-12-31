@@ -1,6 +1,5 @@
 #ifndef CLEDITTEMP_H
 #define CLEDITTEMP_H
-
 #include "CLEditXETL.h"
 #include <stdio.h>
 #include <iostream>
@@ -10,8 +9,7 @@
 #include <ctime>
 #include <ctype.h>
 #include <chrono>
-#define FILE_SIZE 1000
-//#define FILE_SIZE 102400
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditTemp
 {
@@ -20,7 +18,18 @@ class CLEditTemp
         CLEditTemp();
         virtual ~CLEditTemp();
 
+// action reaction
+        struct dateseq
+        {
+            std::string date;
+            std::string seq;
+        };
+        dateseq DateSeq;
+
+        bool Logging;
+
         int DoStuff();
+
 
     protected:
 
@@ -30,6 +39,7 @@ class CLEditTemp
 
         std::fstream LogFile;
         std::fstream ErrFile;
+        std::fstream StatFile;
 
         std::time_t currentdatetime;
 
@@ -38,10 +48,10 @@ class CLEditTemp
         int start_s;
         int stop_s;
         int abendi;
+        int res;
 
         std::string str;
         std::string msg;
-        std::string action;
 
         bool abend;
 
@@ -52,6 +62,9 @@ class CLEditTemp
         void OpenErr();
         void OpenErrn();
         void CloseErr();
+        void OpenStat();
+        void OpenStatn();
+        void CloseStat();
         void eop();
 
 };

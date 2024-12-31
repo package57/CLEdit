@@ -1,6 +1,7 @@
 #ifndef CLEDITRP_H
 #define CLEDITRP_H
 
+#include "CLEditXETL.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -9,8 +10,7 @@
 #include <ctime>
 #include <ctype.h>
 #include <chrono>
-#define FILE_SIZE 1000
-//#define FILE_SIZE 102400
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditRP
 {
@@ -19,14 +19,27 @@ class CLEditRP
         CLEditRP();
         virtual ~CLEditRP();
 
+        struct dateseq
+        {
+            std::string date;
+            std::string seq;
+        };
+        dateseq DateSeq;
+
+        bool Logging;
+
         int Report();
 
     protected:
 
     private:
 
+// gather log data
+        CLEditXETL ETL;
+
         std::fstream LogFile;
         std::fstream ErrFile;
+        std::fstream StatFile;
 
         std::time_t currentdatetime;
 
@@ -61,27 +74,28 @@ class CLEditRP
         };
         dbaction DBAction;
 
-
-
         int bytecnt;
         int start_s;
         int stop_s;
         int abendi;
+        int rc;
 
         std::string str;
         std::string msg;
-        std::string action;
 
         bool abend;
 
         void init();
         void OpenLog();
         void OpenLogn();
-        void CloseLog();
         void OpenErr();
         void OpenErrn();
-        void CloseErr();
+        void OpenStat();
+        void OpenStatn();
         void eop();
+        void CloseErr();
+        void CloseStat();
+        void CloseLog();
 
 };
 

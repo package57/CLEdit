@@ -1,6 +1,7 @@
 // logging and error messages
 std::fstream LogFile;
 std::fstream ErrFile;
+std::fstream StatFile;
 
 // file processing
 // this is an instance of a class to process a file

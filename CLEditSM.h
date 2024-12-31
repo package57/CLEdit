@@ -1,6 +1,5 @@
 #ifndef CLEDITSM_H
 #define CLEDITAM_H
-
 #include <string>
 class CLEditSM
 {
@@ -10,6 +9,8 @@ class CLEditSM
         virtual ~CLEditSM();
 
         int rowcnt;
+
+        bool Logging;
 
         struct InputFile
         {

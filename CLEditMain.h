@@ -17,8 +17,7 @@
 #include <ctype.h>
 #include <pwd.h>
 #include <chrono>
-#define FILE_SIZE 1000
-// FILE_SIZE 102400
+#define FILE_SIZE 102400
 using namespace std;
 class CLEditFrame : public wxFrame
 {
