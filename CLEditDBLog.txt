@@ -1,4 +1,0 @@
-Log file size 0
-Error file size 0
-CLEdit  id 1 code this
-
